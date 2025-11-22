@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     FIREBASE_PROJECT_ID: str = ""
     FIREBASE_PRIVATE_KEY: str = ""
     FIREBASE_CLIENT_EMAIL: str = ""
+    FIREBASE_WEB_API_KEY: str = ""  # Firebase Web API Key for REST API authentication
 
     # External APIs
     GEMINI_API_KEY: str = ""

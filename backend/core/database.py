@@ -7,6 +7,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from core.config import settings
 import json
+import os
+from pathlib import Path
 from typing import Optional
 
 
@@ -28,22 +30,41 @@ def init_firebase():
         # Check if Firebase is already initialized
         firebase_admin.get_app()
     except ValueError:
-        # Initialize Firebase with service account credentials
-        if settings.FIREBASE_PRIVATE_KEY and settings.FIREBASE_CLIENT_EMAIL:
-            # Parse private key (handle newlines)
-            private_key = settings.FIREBASE_PRIVATE_KEY.replace('\\n', '\n')
+        # Try to load credentials from JSON file first
+        # Path is: backend/core/database.py -> go up to backend -> then to project root -> then credentials
+        credentials_path = Path(__file__).parent.parent / ".." / "credentials" / "firebase-service-account.json"
+        credentials_path = credentials_path.resolve()  # Resolve to absolute path
 
-            cred_dict = {
-                "type": "service_account",
-                "project_id": settings.FIREBASE_PROJECT_ID,
-                "private_key": private_key,
-                "client_email": settings.FIREBASE_CLIENT_EMAIL,
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
+        if credentials_path.exists():
+            try:
+                cred = credentials.Certificate(str(credentials_path))
+                firebase_admin.initialize_app(cred)
+                print("✅ Firebase initialized successfully from credentials file")
+            except Exception as e:
+                print(f"❌ Failed to initialize Firebase from file: {str(e)}")
+                print("⚠️  Using mock data mode. Check your Firebase credentials")
+                return None
+        # Fallback to environment variables
+        elif settings.FIREBASE_PRIVATE_KEY and settings.FIREBASE_CLIENT_EMAIL:
+            try:
+                # Parse private key (handle newlines)
+                private_key = settings.FIREBASE_PRIVATE_KEY.replace('\\n', '\n')
 
-            cred = credentials.Certificate(cred_dict)
-            firebase_admin.initialize_app(cred)
-            print("✅ Firebase initialized successfully")
+                cred_dict = {
+                    "type": "service_account",
+                    "project_id": settings.FIREBASE_PROJECT_ID,
+                    "private_key": private_key,
+                    "client_email": settings.FIREBASE_CLIENT_EMAIL,
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                }
+
+                cred = credentials.Certificate(cred_dict)
+                firebase_admin.initialize_app(cred)
+                print("✅ Firebase initialized successfully from environment variables")
+            except Exception as e:
+                print(f"❌ Failed to initialize Firebase from env vars: {str(e)}")
+                print("⚠️  Using mock data mode. Check your Firebase credentials in .env")
+                return None
         else:
             print("⚠️  Firebase credentials not configured. Using mock data.")
             return None

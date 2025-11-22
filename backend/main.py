@@ -25,6 +25,8 @@ ALLOWED_ORIGINS = [
     "http://localhost:19006",  # Expo dev server
     "http://localhost:3000",   # Web dev
     "http://localhost:3001",   # Web dev (Vite alternative port)
+    "http://localhost:3002",   # Web dev (Vite alternative port 2)
+    "http://localhost:3003",   # Web dev (Vite alternative port 3)
     "exp://",                  # Expo Go
 ]
 

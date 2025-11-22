@@ -107,31 +107,53 @@ class TransactionService:
 
         if db:
             try:
-                # Build query
+                # Simple query - just filter by user_id to avoid composite index requirement
                 query = db.collection('transactions').where('user_id', '==', user_id)
 
-                if type_filter:
-                    query = query.where('type', '==', type_filter.value)
-
-                if category:
-                    query = query.where('category', '==', category)
-
-                if start_date:
-                    query = query.where('date', '>=', start_date)
-
-                if end_date:
-                    query = query.where('date', '<=', end_date)
-
-                # Order and paginate
-                query = query.order_by('date', direction=firestore.Query.DESCENDING)
-                query = query.limit(limit).offset(offset)
-
-                # Execute query
+                # Execute query and get all transactions
                 docs = query.stream()
 
+                all_transactions = []
                 for doc in docs:
                     data = doc.to_dict()
-                    transactions.append(Transaction(**data))
+                    try:
+                        # Add document ID to data if not present
+                        if 'id' not in data:
+                            data['id'] = doc.id
+                        all_transactions.append(Transaction(**data))
+                    except Exception as e:
+                        print(f"Warning: Failed to parse transaction {doc.id}: {e}")
+                        continue
+
+                # Filter in memory
+                filtered_transactions = all_transactions
+
+                if type_filter:
+                    filtered_transactions = [t for t in filtered_transactions if t.type == type_filter]
+
+                if category:
+                    filtered_transactions = [t for t in filtered_transactions if t.category == category]
+
+                if start_date:
+                    # Make start_date timezone-aware if it isn't already
+                    if start_date.tzinfo is None:
+                        import pytz
+                        start_date = pytz.utc.localize(start_date)
+                    filtered_transactions = [t for t in filtered_transactions if t.date >= start_date]
+
+                if end_date:
+                    # Make end_date timezone-aware if it isn't already
+                    if end_date.tzinfo is None:
+                        import pytz
+                        end_date = pytz.utc.localize(end_date)
+                    filtered_transactions = [t for t in filtered_transactions if t.date <= end_date]
+
+                # Sort by date descending
+                filtered_transactions.sort(key=lambda x: x.date, reverse=True)
+
+                # Apply pagination
+                transactions = filtered_transactions[offset:offset + limit]
+
             except Exception as e:
                 # Fallback to mock data if Firestore query fails
                 print(f"Warning: Firestore query failed, using mock data: {e}")
@@ -162,6 +184,9 @@ class TransactionService:
             if doc.exists:
                 data = doc.to_dict()
                 if data['user_id'] == user_id:
+                    # Add document ID to data if not present
+                    if 'id' not in data:
+                        data['id'] = doc.id
                     return Transaction(**data)
 
         return None
@@ -200,7 +225,11 @@ class TransactionService:
 
                     # Get updated document
                     updated_doc = doc_ref.get()
-                    return Transaction(**updated_doc.to_dict())
+                    updated_data = updated_doc.to_dict()
+                    # Add document ID to data if not present
+                    if 'id' not in updated_data:
+                        updated_data['id'] = updated_doc.id
+                    return Transaction(**updated_data)
 
         return None
 
@@ -254,6 +283,8 @@ class TransactionService:
         if not end_date:
             end_date = datetime.now()
 
+        print(f"DEBUG - get_summary called with start_date={start_date}, end_date={end_date}")
+
         try:
             # Get transactions for period
             transactions = await self.get_transactions(
@@ -262,6 +293,7 @@ class TransactionService:
                 end_date=end_date,
                 limit=1000  # Get all transactions for period
             )
+            print(f"DEBUG - Retrieved {len(transactions)} transactions for summary")
         except Exception as e:
             # Use mock transactions on error
             print(f"Warning: Failed to get transactions, using mock data: {e}")

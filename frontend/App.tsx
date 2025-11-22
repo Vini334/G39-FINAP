@@ -14,13 +14,24 @@ import { INITIAL_USER_STATS, DAILY_MISSIONS, MOCK_TRANSACTIONS } from './constan
 import { authService } from './services';
 
 const App: React.FC = () => {
-  // Verificar autenticação ao iniciar
-  const isAuthenticated = authService.isAuthenticated();
+  // Verificar autenticação ao iniciar e ao mudar de view
+  const [currentView, setCurrentView] = useState<ViewState>(() => {
+    const isAuthenticated = authService.isAuthenticated();
+    return isAuthenticated ? ViewState.OVERVIEW : ViewState.ONBOARDING;
+  });
 
-  // Se não autenticado, mostrar Onboarding; se autenticado, mostrar Overview
-  const [currentView, setCurrentView] = useState<ViewState>(
-    isAuthenticated ? ViewState.OVERVIEW : ViewState.ONBOARDING
-  );
+  // Reavaliar autenticação quando a view mudar
+  useEffect(() => {
+    const isAuthenticated = authService.isAuthenticated();
+
+    // Se o usuário não está autenticado e está tentando acessar uma view protegida
+    if (!isAuthenticated &&
+        currentView !== ViewState.ONBOARDING &&
+        currentView !== ViewState.LOGIN &&
+        currentView !== ViewState.REGISTER) {
+      setCurrentView(ViewState.ONBOARDING);
+    }
+  }, [currentView]);
   
   const renderView = () => {
     switch (currentView) {

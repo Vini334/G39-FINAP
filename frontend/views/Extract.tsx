@@ -33,12 +33,40 @@ export const Extract: React.FC<ExtractProps> = () => {
 
   useEffect(() => {
     loadTransactions();
+
+    // Reload data when window/tab gets focus (user returns to the tab)
+    const handleFocus = () => {
+      loadTransactions();
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    // Also set up a periodic refresh every 30 seconds
+    const interval = setInterval(() => {
+      loadTransactions();
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   const loadTransactions = async () => {
     try {
       setLoading(true);
-      const data = await transactionService.getTransactions({ limit: 50, offset: 0 });
+
+      // Get transactions from last 30 days to match Overview period
+      const now = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+
+      const data = await transactionService.getTransactions({
+        limit: 50,
+        offset: 0,
+        start_date: thirtyDaysAgo.toISOString(),
+        end_date: now.toISOString()
+      });
       setTransactions(data.transactions);
     } catch (error: any) {
       console.error('Erro ao carregar transações:', error);
@@ -71,7 +99,7 @@ export const Extract: React.FC<ExtractProps> = () => {
     if (!newTx.desc || !newTx.amount) return;
 
     try {
-      const newTransaction = await transactionService.createTransaction({
+      await transactionService.createTransaction({
         description: newTx.desc,
         amount: parseFloat(newTx.amount),
         category: newTx.category as any,
@@ -79,7 +107,9 @@ export const Extract: React.FC<ExtractProps> = () => {
         type: newTx.type
       });
 
-      setTransactions(prev => [newTransaction, ...prev]);
+      // Reload all transactions from server to ensure consistency
+      await loadTransactions();
+
       setIsAddModalOpen(false);
       setNewTx({ desc: '', amount: '', type: 'expense', category: 'Outros' });
       showToast('Transação criada com sucesso!', 'success');
@@ -92,7 +122,10 @@ export const Extract: React.FC<ExtractProps> = () => {
   const handleDeleteTransaction = async (id: string) => {
     try {
       await transactionService.deleteTransaction(id);
-      setTransactions(prev => prev.filter(t => t.id !== id));
+
+      // Reload all transactions from server to ensure consistency
+      await loadTransactions();
+
       showToast('Transação excluída com sucesso!', 'success');
     } catch (error: any) {
       console.error('Erro ao deletar transação:', error);
@@ -134,33 +167,42 @@ export const Extract: React.FC<ExtractProps> = () => {
 
       {/* Chart Card */}
       <Card title="Divisão de Gastos">
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={65}
-                outerRadius={85}
-                paddingAngle={5}
-                dataKey="value"
-                stroke="none"
-                cornerRadius={4}
-              >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="text-center mt-2">
-           <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Gasto</p>
-           <p className="text-2xl font-black text-finap-dark">R$ {totalSpent.toFixed(2)}</p>
-        </div>
+        {data.length > 0 ? (
+          <>
+            <div className="h-64 w-full" style={{ minHeight: '256px', minWidth: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={65}
+                    outerRadius={85}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                    cornerRadius={4}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="text-center mt-2">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Gasto</p>
+              <p className="text-2xl font-black text-finap-dark">R$ {totalSpent.toFixed(2)}</p>
+            </div>
+          </>
+        ) : (
+          <div className="h-64 flex flex-col items-center justify-center text-center py-10">
+            <p className="text-slate-400 font-medium mb-2">Nenhuma despesa ainda</p>
+            <p className="text-xs text-slate-300">Adicione uma transação para ver o gráfico</p>
+          </div>
+        )}
       </Card>
 
       {/* Action Buttons (Insert / Delete) */}
