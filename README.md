@@ -1,9 +1,5 @@
 # 📱 FINAP - Educação Financeira Gamificada
 
-<div align="center">
-<img width="1200" height="475" alt="FINAP Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 <p align="center">
   <strong>Transformando a educação financeira em uma jornada divertida e engajante para adolescentes e jovens adultos brasileiros</strong>
 </p>
