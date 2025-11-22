@@ -1,0 +1,7 @@
+{
+  "name": "FINAP",
+  "description": "A gamified financial education app for young people, featuring the AI assistant FIM, quizzes, and financial tracking.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
