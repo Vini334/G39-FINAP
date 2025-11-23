@@ -8,6 +8,14 @@ import sys
 import os
 from datetime import datetime
 
+# Fix Windows UTF-8 encoding for emojis
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 # Add backend to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -24,6 +32,7 @@ def create_test_user():
 
     # User data
     user_data = {
+        "phone": "5511995989872",  # Número do WhatsApp (formato que a Meta envia)
         "profile": {
             "name": "Usuário Teste",
             "email": "teste@finap.com",
@@ -57,12 +66,15 @@ def create_test_user():
     user_ref.set(user_data)
 
     print(f"✅ User '{user_id}' created successfully!")
+    print(f"   - Phone: +{user_data['phone']}")
     print(f"   - Level: {user_data['gamification']['level']}")
     print(f"   - XP: {user_data['gamification']['xp']}")
     print(f"   - Lives: {user_data['gamification']['lives']}")
     print(f"   - Coins: {user_data['gamification']['coins']}")
     print(f"   - Streak: {user_data['gamification']['current_streak']}")
     print(f"   - Budget: R$ {user_data['profile']['monthly_budget']}")
+    print(f"\n📲 Agora você pode enviar mensagens pelo WhatsApp para: +15551534852")
+    print(f"💬 Teste com: 'ajuda' ou 'gastei 50 no mercado'")
 
     return user_id
 

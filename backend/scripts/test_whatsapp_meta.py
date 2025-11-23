@@ -3,12 +3,21 @@ Script de teste para enviar mensagem WhatsApp via Meta API
 Use este script para testar a integração e descobrir o Phone Number ID
 """
 
+import sys
 import httpx
 import asyncio
 import json
 
+# Fix Windows UTF-8 encoding for emojis
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 # Configurações
-META_TOKEN = "EAALmf481QMUBQFxzsue91AXVSZBgYS6O1W9Ost9RITDtC3khABMC9Sb6ATb5C8qe1eZCRxTNVp4Dm0ltJz4hMtanw3YbICfZAk3jVHZB69iUMvqvrzI6YZCWfoDZCvxPlm6dfUtk45k9GGQ8WZBM0psZAox2D7M9UIltqNJz0xCILJFULT1ZAFqyeMadvmMiqzZAIur5qcPLowbEhdCA2OV4zFZBBACSZAJjNolYuN26M8hh0r8SysRsRAGMmkQYsAxa9xnSCq3udq9ROeMNeOUB290PmAIX"
+META_TOKEN = "EAALmf481QMUBQKiIai9O2WZCWhY3DfYlF6At6epfyVynmDoYTbSTJG4UJnXtPxVUsIZAN5SrA2OG3nI5DvRkdeej2Y417YPBjf8mH9youQJi2VefEptZBwSyqVa5iT6H4ee1K7Xwmv4ojY0ZBvZB1Jz2TJHo8AhuhqJDiGSYEs91XkOZADNTiwrg88Wq10qa5hlbnkjtsySD8L9qzXVPpMie7qeQ21EcEZA914hEo3cgLMe6Mxf8OE6bDPuAwedvk1SIt2fb3MU9fMJkcAEkaxQPff6"
 PHONE_ID = "964874743366135"  # Phone Number ID da Meta
 FROM_PHONE = "15551534852"  # Número do bot (sem +)
 TO_PHONE = "5511995989872"   # Seu número (sem +)

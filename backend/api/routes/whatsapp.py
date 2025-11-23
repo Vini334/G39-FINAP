@@ -383,7 +383,8 @@ async def test_whatsapp():
         return {
             "success": True,
             "message": "WhatsApp service is configured",
-            "whatsapp_number": service.whatsapp_number
+            "phone_id": service.phone_number_id,
+            "api_version": service.api_version
         }
     except Exception as e:
         return {
