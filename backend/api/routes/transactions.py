@@ -3,7 +3,7 @@ Transaction Routes
 API endpoints for transaction management.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional, List
 from datetime import datetime
 from models.transaction import TransactionType
@@ -16,17 +16,17 @@ from schemas.transaction import (
 from schemas.common import SuccessResponse
 from services.transaction_service import TransactionService
 from utils.categories import get_all_categories
+from api.dependencies.auth import get_current_user
 
 router = APIRouter()
 transaction_service = TransactionService()
 
 
-# Temporary: Mock user ID for MVP (replace with auth later)
-MOCK_USER_ID = "test-user-123"
-
-
 @router.post("", response_model=SuccessResponse, status_code=201)
-async def create_transaction(transaction_data: TransactionCreate):
+async def create_transaction(
+    transaction_data: TransactionCreate,
+    user_id: str = Depends(get_current_user)
+):
     """
     Create a new transaction.
 
@@ -46,7 +46,7 @@ async def create_transaction(transaction_data: TransactionCreate):
     try:
         transaction = await transaction_service.create_transaction(
             transaction_data=transaction_data,
-            user_id=MOCK_USER_ID
+            user_id=user_id
         )
 
         return SuccessResponse(
@@ -69,7 +69,8 @@ async def list_transactions(
     type: Optional[TransactionType] = Query(None, description="Filter by type (income/expense)"),
     category: Optional[str] = Query(None, description="Filter by category"),
     start_date: Optional[datetime] = Query(None, description="Filter by start date"),
-    end_date: Optional[datetime] = Query(None, description="Filter by end date")
+    end_date: Optional[datetime] = Query(None, description="Filter by end date"),
+    user_id: str = Depends(get_current_user)
 ):
     """
     List user transactions with optional filters.
@@ -89,7 +90,7 @@ async def list_transactions(
     """
     try:
         transactions = await transaction_service.get_transactions(
-            user_id=MOCK_USER_ID,
+            user_id=user_id,
             limit=limit,
             offset=offset,
             type_filter=type,
@@ -122,7 +123,10 @@ async def list_transactions(
 
 
 @router.get("/{transaction_id}", response_model=SuccessResponse)
-async def get_transaction(transaction_id: str):
+async def get_transaction(
+    transaction_id: str,
+    user_id: str = Depends(get_current_user)
+):
     """
     Get a single transaction by ID.
 
@@ -135,7 +139,7 @@ async def get_transaction(transaction_id: str):
     try:
         transaction = await transaction_service.get_transaction(
             transaction_id=transaction_id,
-            user_id=MOCK_USER_ID
+            user_id=user_id
         )
 
         if not transaction:
@@ -153,7 +157,11 @@ async def get_transaction(transaction_id: str):
 
 
 @router.put("/{transaction_id}", response_model=SuccessResponse)
-async def update_transaction(transaction_id: str, update_data: TransactionUpdate):
+async def update_transaction(
+    transaction_id: str,
+    update_data: TransactionUpdate,
+    user_id: str = Depends(get_current_user)
+):
     """
     Update a transaction.
 
@@ -169,7 +177,7 @@ async def update_transaction(transaction_id: str, update_data: TransactionUpdate
     try:
         transaction = await transaction_service.update_transaction(
             transaction_id=transaction_id,
-            user_id=MOCK_USER_ID,
+            user_id=user_id,
             update_data=update_data
         )
 
@@ -191,7 +199,10 @@ async def update_transaction(transaction_id: str, update_data: TransactionUpdate
 
 
 @router.delete("/{transaction_id}", response_model=SuccessResponse)
-async def delete_transaction(transaction_id: str):
+async def delete_transaction(
+    transaction_id: str,
+    user_id: str = Depends(get_current_user)
+):
     """
     Delete a transaction.
 
@@ -204,7 +215,7 @@ async def delete_transaction(transaction_id: str):
     try:
         deleted = await transaction_service.delete_transaction(
             transaction_id=transaction_id,
-            user_id=MOCK_USER_ID
+            user_id=user_id
         )
 
         if not deleted:

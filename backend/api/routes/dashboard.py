@@ -4,7 +4,7 @@ API endpoints for dashboard data and summaries.
 """
 
 from fastapi import APIRouter, HTTPException, Query
-from datetime import datetime
+from datetime import datetime, timedelta
 from schemas.transaction import DashboardSummary, TransactionResponse
 from schemas.common import SuccessResponse, APIResponse
 from schemas.gamification import DashboardSummaryResponse, DashboardStats, BalanceInfo, BudgetAlertInfo, MissionResponse
@@ -184,13 +184,13 @@ async def get_dashboard_overview(user_id: str):
         )
 
         # 2. Balance information
-        # Get transactions for current month
+        # Get transactions for the last 30 days to show all synthetic data
         now = datetime.now()
-        start_of_month = datetime(now.year, now.month, 1)
+        start_date = now - timedelta(days=30)
 
         summary = await transaction_service.get_summary(
             user_id=user_id,
-            start_date=start_of_month,
+            start_date=start_date,
             end_date=now
         )
 

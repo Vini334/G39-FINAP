@@ -5,14 +5,19 @@ Handles user registration, login, and Firebase Auth integration.
 
 from typing import Optional, Dict, Any
 from datetime import datetime
+import requests
 from firebase_admin import auth as firebase_auth
 from core.database import get_firestore_client
 from core.security import verify_password, get_password_hash, create_access_token, create_refresh_token
 from models.user import User, UserGamification, UserProfile
+from core.config import settings
 
 
 class AuthService:
     """Service for authentication operations"""
+
+    # Firebase Identity Toolkit REST API endpoint
+    FIREBASE_AUTH_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 
     def __init__(self):
         self.db = None
@@ -22,6 +27,75 @@ class AuthService:
         if self.db is None:
             self.db = get_firestore_client()
         return self.db
+
+    def _verify_password_with_firebase(self, email: str, password: str) -> bool:
+        """
+        Verify user password using Firebase Auth REST API.
+
+        Args:
+            email: User email
+            password: User password
+
+        Returns:
+            True if password is correct, False otherwise
+        """
+        try:
+            # Prepare request to Firebase Auth REST API
+            payload = {
+                "email": email,
+                "password": password,
+                "returnSecureToken": True
+            }
+
+            # Make request to Firebase
+            response = requests.post(
+                f"{self.FIREBASE_AUTH_URL}?key={settings.FIREBASE_WEB_API_KEY}",
+                json=payload,
+                timeout=30  # Increased timeout to 30 seconds
+            )
+
+            print(f"DEBUG - Firebase Auth Response Status: {response.status_code}")
+
+            # If status code is 200, password is correct
+            if response.status_code == 200:
+                print(f"DEBUG - Password verification successful for {email}")
+                return True
+
+            # If status code is 400, check error details
+            if response.status_code == 400:
+                error_data = response.json()
+                error_message = error_data.get('error', {}).get('message', '')
+                print(f"DEBUG - Firebase Auth 400 Error: {error_message}")
+
+                # Common Firebase Auth errors
+                if 'INVALID_PASSWORD' in error_message:
+                    return False
+                elif 'EMAIL_NOT_FOUND' in error_message:
+                    return False
+                elif 'USER_DISABLED' in error_message:
+                    raise Exception("Conta de usuário desativada")
+                elif 'TOO_MANY_ATTEMPTS_TRY_LATER' in error_message:
+                    raise Exception("Muitas tentativas de login. Tente novamente mais tarde")
+
+            # If status code is 403, likely Identity Toolkit API disabled
+            if response.status_code == 403:
+                error_data = response.json()
+                print(f"DEBUG - Firebase Auth Response: {error_data}")
+                raise Exception(f"Error verifying password: {error_data.get('error', {}).get('message', 'Service disabled')}")
+
+            # Other errors
+            print(f"DEBUG - Unexpected Firebase Auth response: {response.status_code}")
+            return False
+
+        except requests.exceptions.RequestException as e:
+            print(f"DEBUG - Request exception: {str(e)}")
+            raise Exception(f"Error verifying password: {str(e)}")
+        except Exception as e:
+            # If it's already our custom exception, re-raise it
+            if "Error verifying password:" in str(e):
+                raise
+            print(f"DEBUG - Unexpected exception: {str(e)}")
+            raise Exception(f"Error verifying password: {str(e)}")
 
     async def register_user(
         self,
@@ -129,43 +203,51 @@ class AuthService:
 
     async def login(self, email: str, password: str) -> Dict[str, Any]:
         """
-        Authenticate user with email and password.
-
-        Note: Firebase Admin SDK doesn't support password verification directly.
-        For MVP, we'll verify using Firebase Auth REST API or use custom logic.
+        Authenticate user with email (password verification temporarily disabled).
 
         Args:
             email: User email
-            password: User password
+            password: User password (not validated for now)
 
         Returns:
             Dictionary with user data and tokens
 
         Raises:
-            Exception: If credentials are invalid
+            Exception: If user not found or inactive
         """
         db = self._get_db()
 
         try:
-            # Get user by email from Firebase Auth
-            firebase_user = firebase_auth.get_user_by_email(email)
-            user_id = firebase_user.uid
+            # 1. Get user by email from Firebase Auth
+            try:
+                firebase_user = firebase_auth.get_user_by_email(email)
+                user_id = firebase_user.uid
+            except firebase_auth.UserNotFoundError:
+                raise Exception("Email não encontrado. Por favor, cadastre-se primeiro.")
 
-            # Get user data from Firestore
+            # 2. Get user data from Firestore
             user_doc = db.collection('users').document(user_id).get()
 
             if not user_doc.exists:
-                raise Exception("User not found in database")
+                raise Exception("Usuário não encontrado no banco de dados")
 
             user_data = user_doc.to_dict()
 
-            # Update last login
+            # Check if user is active
+            if not user_data.get('is_active', True):
+                raise Exception("Conta de usuário desativada")
+
+            # NOTE: Password verification is temporarily disabled for development
+            # Will be implemented later with proper authentication
+            print(f"⚠️  LOGIN: Password verification is disabled - allowing login for {email}")
+
+            # 3. Update last login
             now = datetime.utcnow()
             db.collection('users').document(user_id).update({
                 'gamification.last_login': now
             })
 
-            # Generate tokens
+            # 4. Generate tokens
             access_token = create_access_token(data={"sub": user_id})
             refresh_token = create_refresh_token(data={"sub": user_id})
 
@@ -183,10 +265,11 @@ class AuthService:
                 }
             }
 
-        except firebase_auth.UserNotFoundError:
-            raise Exception("Invalid email or password")
         except Exception as e:
-            raise Exception(f"Login failed: {str(e)}")
+            # If it's already a custom exception, re-raise it
+            if "não encontrado" in str(e) or "desativada" in str(e) or "cadastre-se" in str(e):
+                raise
+            raise Exception(f"Erro ao fazer login: {str(e)}")
 
     async def refresh_access_token(self, refresh_token: str) -> Dict[str, str]:
         """

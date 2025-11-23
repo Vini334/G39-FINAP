@@ -19,6 +19,11 @@ interface OverviewData {
     monthly_budget: number;
     budget_percentage: number;
   };
+  budget_alert: {
+    show: boolean;
+    percentage: number;
+    message: string;
+  };
 }
 
 export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
@@ -29,6 +34,23 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     loadOverviewData();
+
+    // Reload data when window/tab gets focus (user returns to the tab)
+    const handleFocus = () => {
+      loadOverviewData();
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    // Also set up a periodic refresh every 30 seconds
+    const interval = setInterval(() => {
+      loadOverviewData();
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   const loadOverviewData = async () => {
@@ -47,7 +69,8 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
       setData({
         stats: overview.stats,
         missions: overview.missions,
-        balance: overview.balance
+        balance: overview.balance,
+        budget_alert: overview.budget_alert
       });
 
       // Get user's first name
@@ -76,7 +99,7 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
     return null;
   }
 
-  const { stats, missions, balance } = data;
+  const { stats, missions, balance, budget_alert } = data;
   const spendingPercentage = balance && balance.monthly_budget > 0
     ? (balance.spent_this_month / balance.monthly_budget) * 100
     : 0;
@@ -130,18 +153,20 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
          </button>
       </div>
 
-      {/* Alert Card */}
-      <Card className="border-l-4 border-l-finap-alert bg-orange-50/50">
-        <div className="flex gap-4 items-start">
-           <FimMascot size="sm" emotion="worried" />
-           <div>
-              <h3 className="font-bold text-finap-alert mb-1 text-base">Alerta de Orçamento</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Você gastou <span className="font-bold text-slate-800">50%</span> do seu orçamento de comida. Que tal cozinhar hoje?
-              </p>
-           </div>
-        </div>
-      </Card>
+      {/* Alert Card - Only show if budget alert is active */}
+      {budget_alert && budget_alert.show && (
+        <Card className="border-l-4 border-l-finap-alert bg-orange-50/50">
+          <div className="flex gap-4 items-start">
+             <FimMascot size="sm" emotion="worried" />
+             <div>
+                <h3 className="font-bold text-finap-alert mb-1 text-base">Alerta de Orçamento</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {budget_alert.message}
+                </p>
+             </div>
+          </div>
+        </Card>
+      )}
 
       {/* Balance Card */}
       <Card title="Saldo Atual">

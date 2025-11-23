@@ -60,10 +60,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     try {
       if (authMode === 'LOGIN') {
         // Login
-        await authService.login({
+        const result = await authService.login({
           email: formData.email,
           password: formData.password
         });
+
+        console.log('Login bem-sucedido:', result);
+
+        // Apenas vai para LOADING se o login foi bem-sucedido
         setStep('LOADING');
         setTimeout(onComplete, 2000);
       } else {
@@ -77,13 +81,19 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       }
     } catch (err: any) {
       // Melhorar mensagens de erro
+      console.error('Erro no handleAuth:', err);
       const errorMessage = err.message || 'Erro ao autenticar';
-      if (errorMessage.includes('already')) {
+
+      if (errorMessage.includes('Email ou senha')) {
+        setError(errorMessage);
+      } else if (errorMessage.includes('already') || errorMessage.includes('cadastrado')) {
         setError('Este email já está cadastrado. Tente fazer login.');
       } else if (errorMessage.includes('email')) {
         setError('Por favor, insira um email válido.');
       } else if (errorMessage.includes('password') || errorMessage.includes('senha')) {
         setError(errorMessage);
+      } else if (errorMessage.includes('conexão') || errorMessage.includes('rede')) {
+        setError('Erro de conexão. Verifique sua internet.');
       } else {
         setError(errorMessage);
       }
@@ -447,12 +457,19 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             </div>
         </div>
 
-        <button 
-            onClick={nextStep} 
-            disabled={formData.interests.length === 0}
-            className="w-full bg-finap-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-500/30 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+        <button
+            onClick={nextStep}
+            disabled={formData.interests.length === 0 || loading}
+            className="w-full bg-finap-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-500/30 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2"
         >
-            Finalizar Configuração
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Criando conta...
+              </>
+            ) : (
+              'Finalizar Configuração'
+            )}
         </button>
       </div>
     );
