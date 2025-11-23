@@ -287,11 +287,11 @@ finap-googleai/
 
 | Documento | Descrição |
 |-----------|-----------|
-| [Arquitetura/Didática do Projeto](./DOCUMENTO_ESCOPO_ENTREGA.md) | 📊 Escopo com arquitetura e didática |
+| [DOCUMENTO_ESCOPO_ENTREGA](./DOCUMENTO_ESCOPO_ENTREGA.md) | 📊 Escopo com arquitetura e didática |
 | [GUIA-TESTE-COMPLETO-FINAP.md](./GUIA-TESTE-COMPLETO-FINAP.md) | 🧪 Passo a passo completo para testar todas funcionalidades |
 | [RESUMO-INTEGRACAO-BACKEND-FRONTEND.md](./RESUMO-INTEGRACAO-BACKEND-FRONTEND.md) | 📊 Resumo técnico da integração |
 | [ANALISE_BACKEND_INTEGRACAO.md](./ANALISE_BACKEND_INTEGRACAO.md) | 🔍 Análise detalhada do backend |
-| [docs/README.md](./docs/README.md) | 📚 Documentação completa do projeto |
+| [CHANGELOG.md](./CHANGELOG.md) | 📚 Histórico de desenvolvimento |
 | [CLAUDE.md](./CLAUDE.md) | 🤖 Instruções para Claude Code |
 
 ### 🔗 Links Úteis
