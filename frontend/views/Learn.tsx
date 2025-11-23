@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '../components/Card';
 import { QUIZ_SAMPLE } from '../constants';
-import { CheckCircle2, XCircle, BookOpen, Trophy, Heart, ArrowLeft, Lock, Star, Play, TrendingUp, PiggyBank, Wallet, Send, X, RefreshCw } from 'lucide-react';
+import { CheckCircle2, XCircle, BookOpen, Trophy, Heart, ArrowLeft, Lock, Star, Play, TrendingUp, PiggyBank, Wallet, Send, X, RefreshCw, ChevronRight, Sparkles } from 'lucide-react';
 import { FimMascot } from '../components/FimMascot';
 import { UserStats, Message } from '../types';
 import { createChatSession, sendMessageToFim } from '../services/geminiService';
@@ -11,7 +11,7 @@ interface LearnProps {
     stats?: UserStats;
 }
 
-type ViewMode = 'COURSES' | 'TRAIL' | 'INTRO' | 'QUIZ' | 'RESULT';
+type ViewMode = 'COURSES' | 'TRAIL' | 'INTRO' | 'CONTENT' | 'QUIZ' | 'RESULT';
 
 interface Course {
     id: number;
@@ -96,6 +96,64 @@ const MODULES: Module[] = [
     }
 ];
 
+// Conteúdo educacional por módulo
+const MODULE_CONTENT: { [key: number]: { title: string; content: string }[] } = {
+    2: [ // Módulo 2: Segredos da Economia
+        {
+            title: "A Mágica dos Juros Compostos",
+            content: `Os juros compostos são considerados a **oitava maravilha do mundo** por Albert Einstein! Mas o que são exatamente?
+
+**O Básico:**
+Juros compostos são juros calculados sobre o valor inicial MAIS os juros já acumulados. É como uma bola de neve que cresce cada vez mais rápido!
+
+**Exemplo Prático:**
+Imagine que você guardou R$ 100 com juros de 10% ao ano:
+• Ano 1: R$ 100 + R$ 10 = R$ 110
+• Ano 2: R$ 110 + R$ 11 = R$ 121
+• Ano 3: R$ 121 + R$ 12,10 = R$ 133,10
+
+Percebe como os juros aumentam a cada ano? No ano 2, você ganhou R$ 11 em vez de R$ 10!
+
+**Por que isso importa?**
+Quanto mais cedo você começar a economizar, mais tempo seus juros têm para crescer. Um jovem que começa aos 15 anos pode ter muito mais dinheiro aos 30 do que alguém que começou aos 25, mesmo investindo menos!
+
+**Dica de Ouro:**
+Comece pequeno, mas comece agora! Mesmo R$ 10 por mês podem se transformar em milhares com o tempo.`
+        },
+        {
+            title: "Fundo de Emergência & Regra 50/30/20",
+            content: `Todo mundo precisa de um **colchão financeiro** para imprevistos. Vamos aprender como construir o seu!
+
+**O que é um Fundo de Emergência?**
+É uma reserva de dinheiro guardada especialmente para emergências: celular quebrou, problema de saúde, ou até perda de renda. Serve para você não entrar em pânico quando algo inesperado acontecer.
+
+**Quanto guardar?**
+Para adolescentes: tente juntar o equivalente a 3 meses de suas despesas mensais.
+Para adultos: idealmente de 6 a 12 meses de despesas.
+
+**A Regra 50/30/20:**
+Uma forma simples de organizar seu dinheiro:
+
+💰 **50% - Necessidades**
+Coisas essenciais: transporte, alimentação, contas básicas.
+
+🎮 **30% - Desejos**
+Diversão e entretenimento: jogos, cinema, lanches, roupas da moda.
+
+🏦 **20% - Poupança**
+Seu fundo de emergência, investimentos e objetivos futuros.
+
+**Exemplo com mesada de R$ 200:**
+• R$ 100 para necessidades
+• R$ 60 para diversão
+• R$ 40 para poupar (vai direto pro fundo!)
+
+**Desafio:**
+Tente aplicar essa regra na sua próxima mesada ou salário. Você vai se surpreender com quanto consegue economizar!`
+        }
+    ]
+};
+
 export const Learn: React.FC<LearnProps> = ({ stats }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('COURSES');
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
@@ -105,6 +163,7 @@ export const Learn: React.FC<LearnProps> = ({ stats }) => {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
   const [lives, setLives] = useState(stats?.lives || 5);
+  const [currentContentPage, setCurrentContentPage] = useState(0);
 
   // FIM Mini Chat State
   const [showFimChat, setShowFimChat] = useState(false);
@@ -160,6 +219,11 @@ export const Learn: React.FC<LearnProps> = ({ stats }) => {
       if (mod.status === 'locked') return;
       setActiveModule(mod);
       setViewMode('INTRO');
+  };
+
+  const startLesson = () => {
+    setCurrentContentPage(0);
+    setViewMode('CONTENT');
   };
 
   const startQuiz = () => {
@@ -285,6 +349,172 @@ export const Learn: React.FC<LearnProps> = ({ stats }) => {
        );
   }
 
+  // --- Render: Content Screen (Apostila) ---
+  if (viewMode === 'CONTENT' && activeModule) {
+      const contentPages = MODULE_CONTENT[activeModule.id] || [];
+      const currentPage = contentPages[currentContentPage];
+      const isLastPage = currentContentPage === contentPages.length - 1;
+
+      if (!currentPage) {
+          // Fallback if no content exists
+          return (
+              <div className="pb-24 px-4 pt-4 h-full flex flex-col items-center justify-center">
+                  <p className="text-slate-500 mb-4">Conteúdo não disponível para este módulo.</p>
+                  <button
+                      onClick={() => setViewMode('INTRO')}
+                      className="bg-finap-primary text-white font-bold py-3 px-6 rounded-xl"
+                  >
+                      Voltar
+                  </button>
+              </div>
+          );
+      }
+
+      return (
+          <div className="pb-24 h-full flex flex-col animate-fade-in bg-gradient-to-b from-teal-50 to-white">
+              {/* Header */}
+              <div className="bg-white p-4 border-b border-slate-200 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+                  <button
+                      onClick={() => setViewMode('INTRO')}
+                      className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  >
+                      <ArrowLeft size={24} className="text-slate-600" />
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                      <BookOpen size={20} className="text-finap-primary" />
+                      <span className="font-bold text-slate-700 text-sm">
+                          Página {currentContentPage + 1} de {contentPages.length}
+                      </span>
+                  </div>
+
+                  <div className="w-10"></div> {/* Spacer */}
+              </div>
+
+              {/* Progress Dots */}
+              <div className="flex justify-center gap-2 py-3 bg-white border-b border-slate-100">
+                  {contentPages.map((_, idx) => (
+                      <div
+                          key={idx}
+                          className={`h-2 rounded-full transition-all ${
+                              idx === currentContentPage
+                                  ? 'w-8 bg-finap-primary'
+                                  : 'w-2 bg-slate-200'
+                          }`}
+                      />
+                  ))}
+              </div>
+
+              {/* Content Area */}
+              <div className="flex-1 overflow-y-auto px-4 pt-6 pb-6">
+                  <div className="max-w-2xl mx-auto">
+                      {/* Title with Icon */}
+                      <div className="flex items-start gap-3 mb-6">
+                          <div className="bg-finap-primary/10 p-3 rounded-xl">
+                              <Sparkles className="text-finap-primary" size={28} />
+                          </div>
+                          <div className="flex-1">
+                              <h1 className="text-2xl font-black text-slate-800 leading-tight">
+                                  {currentPage.title}
+                              </h1>
+                          </div>
+                      </div>
+
+                      {/* Content Card */}
+                      <Card className="bg-white shadow-sm border-slate-200 mb-6">
+                          <div className="prose prose-slate max-w-none">
+                              {currentPage.content.split('\n\n').map((paragraph, idx) => {
+                                  // Check if paragraph is a heading (starts with **)
+                                  if (paragraph.trim().startsWith('**') && paragraph.trim().endsWith('**')) {
+                                      const text = paragraph.replace(/\*\*/g, '');
+                                      return (
+                                          <h3 key={idx} className="text-lg font-bold text-finap-dark mt-4 mb-2">
+                                              {text}
+                                          </h3>
+                                      );
+                                  }
+
+                                  // Check if it's a list item
+                                  if (paragraph.trim().startsWith('•') || paragraph.trim().startsWith('💰') || paragraph.trim().startsWith('🎮') || paragraph.trim().startsWith('🏦')) {
+                                      return (
+                                          <p key={idx} className="text-slate-700 leading-relaxed ml-2 mb-2">
+                                              {paragraph.split('**').map((part, i) =>
+                                                  i % 2 === 0 ? part : <strong key={i} className="font-bold text-slate-900">{part}</strong>
+                                              )}
+                                          </p>
+                                      );
+                                  }
+
+                                  // Regular paragraph
+                                  return (
+                                      <p key={idx} className="text-slate-700 leading-relaxed mb-4">
+                                          {paragraph.split('**').map((part, i) =>
+                                              i % 2 === 0 ? part : <strong key={i} className="font-bold text-slate-900">{part}</strong>
+                                          )}
+                                      </p>
+                                  );
+                              })}
+                          </div>
+                      </Card>
+
+                      {/* FIM Mascot Tip */}
+                      <div className="bg-teal-50 border-2 border-teal-200 rounded-2xl p-4 flex gap-3 items-start">
+                          <div className="flex-shrink-0">
+                              <FimMascot size="sm" emotion="happy" />
+                          </div>
+                          <div className="flex-1">
+                              <p className="text-sm font-bold text-teal-900 mb-1">Dica do FIM:</p>
+                              <p className="text-sm text-teal-800 leading-relaxed">
+                                  {isLastPage
+                                      ? "Agora que você leu tudo, está pronto pro quiz! Boa sorte, mano! 🚀"
+                                      : "Leia com calma, essas dicas vão te ajudar no quiz! 📚"
+                                  }
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="bg-white border-t border-slate-200 p-4 flex gap-3">
+                  {currentContentPage > 0 && (
+                      <button
+                          onClick={() => setCurrentContentPage(prev => prev - 1)}
+                          className="flex-1 bg-slate-100 text-slate-700 font-bold py-4 rounded-xl hover:bg-slate-200 transition-colors"
+                      >
+                          Anterior
+                      </button>
+                  )}
+
+                  <button
+                      onClick={() => {
+                          if (isLastPage) {
+                              setViewMode('QUIZ');
+                              setCurrentQuestionIndex(0);
+                              setScore(0);
+                              setSelectedOption(null);
+                              setIsAnswerChecked(false);
+                          } else {
+                              setCurrentContentPage(prev => prev + 1);
+                          }
+                      }}
+                      className="flex-1 bg-finap-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                  >
+                      {isLastPage ? (
+                          <>
+                              <Play size={20} fill="currentColor" /> Fazer Quiz
+                          </>
+                      ) : (
+                          <>
+                              Próxima <ChevronRight size={20} />
+                          </>
+                      )}
+                  </button>
+              </div>
+          </div>
+      );
+  }
+
   // --- Render: Quiz Screen ---
   if (viewMode === 'QUIZ' && activeModule) {
     const question = QUIZ_SAMPLE[currentQuestionIndex];
@@ -388,8 +618,8 @@ export const Learn: React.FC<LearnProps> = ({ stats }) => {
                 </Card>
             </div>
 
-            <button 
-                onClick={startQuiz}
+            <button
+                onClick={startLesson}
                 className="w-full bg-finap-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30 active:scale-95 transition-transform flex items-center justify-center gap-2"
             >
                 <Play size={20} fill="currentColor" /> Começar Lição
@@ -417,8 +647,8 @@ export const Learn: React.FC<LearnProps> = ({ stats }) => {
 
        <div className="relative flex flex-col items-center pb-10 px-4">
           {/* Winding Path Line Background */}
-          <svg className="absolute top-0 left-0 w-full h-full -z-10 pointer-events-none" preserveAspectRatio="none">
-              <path d="M50% 50 L 50% 1000" stroke="#E2E8F0" strokeWidth="8" strokeLinecap="round" />
+          <svg className="absolute top-0 left-0 w-full h-full -z-10 pointer-events-none" viewBox="0 0 100 1000" preserveAspectRatio="none">
+              <path d="M 50 50 L 50 1000" stroke="#E2E8F0" strokeWidth="8" strokeLinecap="round" />
           </svg>
 
           {MODULES.map((mod, index) => {

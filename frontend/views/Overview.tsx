@@ -42,14 +42,8 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
 
     window.addEventListener('focus', handleFocus);
 
-    // Also set up a periodic refresh every 30 seconds
-    const interval = setInterval(() => {
-      loadOverviewData();
-    }, 30000);
-
     return () => {
       window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
     };
   }, []);
 
@@ -106,7 +100,7 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
 
   return (
     <div className="pb-24 px-4 pt-4 animate-fade-in space-y-5">
-      
+
       {/* Top Stats Bar - Clean white pill */}
       <div className="flex justify-between items-center bg-white border border-slate-200 p-2 rounded-full shadow-sm mb-4">
         <div className="flex items-center gap-1 px-3">
@@ -134,16 +128,16 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
                <span className="text-xs font-bold text-finap-primary">Lvl {stats.level}</span>
             </div>
          </div>
-         
+
          {/* Profile Button */}
-         <button 
+         <button
            onClick={() => onNavigate(ViewState.PROFILE)}
            className="relative group"
          >
             <div className="w-14 h-14 rounded-full border-2 border-white shadow-md overflow-hidden bg-indigo-100 relative z-10 group-active:scale-95 transition-transform">
-               <img 
-                  src="https://api.dicebear.com/9.x/avataaars/svg?seed=Alex&backgroundColor=c0aede" 
-                  alt="Profile" 
+               <img
+                  src="/assets/profilePic.png"
+                  alt="Profile"
                   className="w-full h-full object-cover"
                />
             </div>
@@ -153,20 +147,18 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
          </button>
       </div>
 
-      {/* Alert Card - Only show if budget alert is active */}
-      {budget_alert && budget_alert.show && (
-        <Card className="border-l-4 border-l-finap-alert bg-orange-50/50">
-          <div className="flex gap-4 items-start">
-             <FimMascot size="sm" emotion="worried" />
-             <div>
-                <h3 className="font-bold text-finap-alert mb-1 text-base">Alerta de Orçamento</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {budget_alert.message}
-                </p>
-             </div>
-          </div>
-        </Card>
-      )}
+      {/* Alert Card - Always visible for MVP demo */}
+      <Card className="border-l-4 border-l-finap-alert bg-orange-50/50">
+        <div className="flex gap-4 items-start">
+           <FimMascot size="sm" emotion="worried" />
+           <div>
+              <h3 className="font-bold text-finap-alert mb-1 text-base">Alerta de Orçamento</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {budget_alert?.message || "Você já gastou 35% do seu saldo em Alimentação! Tá na hora de dar uma segurada nos gastos, mano."}
+              </p>
+           </div>
+        </div>
+      </Card>
 
       {/* Balance Card */}
       <Card title="Saldo Atual">

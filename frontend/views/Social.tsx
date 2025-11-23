@@ -150,12 +150,17 @@ export const Social: React.FC = () => {
            <div className="space-y-3">
               {activeGoal.members.map((member) => {
                  const isOnTrack = member.status === 'on-track';
+                 const isCurrentUser = member.name === 'Você';
                  return (
                     <Card key={member.id} className="mb-0 py-3 px-4 flex items-center justify-between">
                        <div className="flex items-center gap-3">
                           <div className="relative">
                              <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200">
-                                <img src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${member.avatar}`} alt={member.name} />
+                                <img
+                                  src={isCurrentUser ? '/assets/profilePic.png' : `https://api.dicebear.com/9.x/avataaars/svg?seed=${member.avatar}`}
+                                  alt={member.name}
+                                  className="w-full h-full object-cover"
+                                />
                              </div>
                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center ${isOnTrack ? 'bg-finap-success' : 'bg-red-500'}`}>
                                 {isOnTrack ? <CheckCircle size={10} className="text-white" /> : <AlertCircle size={10} className="text-white" />}
@@ -230,11 +235,18 @@ export const Social: React.FC = () => {
               </div>
               <div className="flex items-center justify-between pt-1">
                  <div className="flex -space-x-2">
-                    {MOCK_GOAL.members.map((m, i) => (
-                       <div key={i} className="w-8 h-8 rounded-full border-2 border-teal-600 bg-slate-200 overflow-hidden">
-                          <img src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${m.avatar}`} alt={m.name} />
-                       </div>
-                    ))}
+                    {MOCK_GOAL.members.map((m, i) => {
+                       const isCurrentUser = m.name === 'Você';
+                       return (
+                          <div key={i} className="w-8 h-8 rounded-full border-2 border-teal-600 bg-slate-200 overflow-hidden">
+                             <img
+                               src={isCurrentUser ? '/assets/profilePic.png' : `https://api.dicebear.com/9.x/avataaars/svg?seed=${m.avatar}`}
+                               alt={m.name}
+                               className="w-full h-full object-cover"
+                             />
+                          </div>
+                       );
+                    })}
                  </div>
                  <span className="text-xs font-bold text-teal-200 bg-white/10 px-2 py-1 rounded-md">Toque para ver detalhes</span>
               </div>

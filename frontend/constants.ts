@@ -44,5 +44,16 @@ export const QUIZ_SAMPLE: QuizQuestion[] = [
       "Ingressos para show"
     ],
     correctIndex: 2
+  },
+  {
+    id: 3,
+    question: "Segundo a Regra 50/30/20, como você deve dividir seu dinheiro?",
+    options: [
+      "50% Diversão, 30% Poupança, 20% Necessidades",
+      "50% Necessidades, 30% Desejos, 20% Poupança",
+      "50% Poupança, 30% Necessidades, 20% Desejos",
+      "50% Desejos, 30% Poupança, 20% Necessidades"
+    ],
+    correctIndex: 1
   }
 ];

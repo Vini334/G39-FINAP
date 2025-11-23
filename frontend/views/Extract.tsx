@@ -41,14 +41,8 @@ export const Extract: React.FC<ExtractProps> = () => {
 
     window.addEventListener('focus', handleFocus);
 
-    // Also set up a periodic refresh every 30 seconds
-    const interval = setInterval(() => {
-      loadTransactions();
-    }, 30000);
-
     return () => {
       window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
     };
   }, []);
 
@@ -169,8 +163,8 @@ export const Extract: React.FC<ExtractProps> = () => {
       <Card title="Divisão de Gastos">
         {data.length > 0 ? (
           <>
-            <div className="h-64 w-full" style={{ minHeight: '256px', minWidth: '100%' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 w-full" style={{ minHeight: '256px', minWidth: '100%', position: 'relative' }}>
+              <ResponsiveContainer width="100%" height={256} minWidth={300}>
                 <PieChart>
                   <Pie
                     data={data}
@@ -270,8 +264,8 @@ export const Extract: React.FC<ExtractProps> = () => {
                    <label className="text-xs font-bold text-slate-500 uppercase ml-1">Valor (R$)</label>
                    <div className="relative">
                       <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         value={newTx.amount}
                         onChange={(e) => setNewTx({...newTx, amount: e.target.value})}
                         className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pl-9 mt-1 font-medium outline-none focus:border-finap-primary"
@@ -280,7 +274,22 @@ export const Extract: React.FC<ExtractProps> = () => {
                    </div>
                 </div>
 
-                <button 
+                <div>
+                   <label className="text-xs font-bold text-slate-500 uppercase ml-1">Categoria</label>
+                   <select
+                     value={newTx.category}
+                     onChange={(e) => setNewTx({...newTx, category: e.target.value})}
+                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 mt-1 font-medium outline-none focus:border-finap-primary"
+                   >
+                     <option value="Alimentação">Alimentação</option>
+                     <option value="Transporte">Transporte</option>
+                     <option value="Lazer">Lazer</option>
+                     <option value="Educação">Educação</option>
+                     <option value="Outros">Outros</option>
+                   </select>
+                </div>
+
+                <button
                   onClick={handleAddTransaction}
                   className="w-full bg-finap-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/20 mt-2 active:scale-95 transition-transform"
                 >

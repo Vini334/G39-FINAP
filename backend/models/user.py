@@ -12,6 +12,7 @@ class UserProfile(BaseModel):
     """User profile information"""
     age: Optional[int] = None
     monthly_income: Optional[float] = None
+    monthly_budget: Optional[float] = 3000.0  # Default monthly budget R$ 3000
     financial_goals: List[str] = []
     avatar_url: Optional[str] = None
 

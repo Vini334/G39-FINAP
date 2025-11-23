@@ -111,6 +111,7 @@ class TransactionService:
                 query = db.collection('transactions').where('user_id', '==', user_id)
 
                 # Execute query and get all transactions
+                print(f"DEBUG - Querying transactions for user_id={user_id}")
                 docs = query.stream()
 
                 all_transactions = []
@@ -135,18 +136,22 @@ class TransactionService:
                     filtered_transactions = [t for t in filtered_transactions if t.category == category]
 
                 if start_date:
-                    # Make start_date timezone-aware if it isn't already
-                    if start_date.tzinfo is None:
-                        import pytz
-                        start_date = pytz.utc.localize(start_date)
-                    filtered_transactions = [t for t in filtered_transactions if t.date >= start_date]
+                    # Convert transaction date to naive local time for comparison
+                    # Firestore stores dates in UTC, so we need to convert to local timezone
+                    filtered_transactions = [
+                        t for t in filtered_transactions
+                        if (t.date.astimezone().replace(tzinfo=None) if hasattr(t.date, 'astimezone') else t.date.replace(tzinfo=None))
+                        >= start_date.replace(tzinfo=None)
+                    ]
 
                 if end_date:
-                    # Make end_date timezone-aware if it isn't already
-                    if end_date.tzinfo is None:
-                        import pytz
-                        end_date = pytz.utc.localize(end_date)
-                    filtered_transactions = [t for t in filtered_transactions if t.date <= end_date]
+                    # Convert transaction date to naive local time for comparison
+                    # Firestore stores dates in UTC, so we need to convert to local timezone
+                    filtered_transactions = [
+                        t for t in filtered_transactions
+                        if (t.date.astimezone().replace(tzinfo=None) if hasattr(t.date, 'astimezone') else t.date.replace(tzinfo=None))
+                        <= end_date.replace(tzinfo=None)
+                    ]
 
                 # Sort by date descending
                 filtered_transactions.sort(key=lambda x: x.date, reverse=True)

@@ -2,10 +2,18 @@ import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 
 const API_KEY = process.env.API_KEY || '';
 
+// Debug: Log to verify API key is loaded
+if (!API_KEY) {
+  console.error('❌ GEMINI API KEY NOT FOUND! Check .env.local');
+} else {
+  console.log('✅ Gemini API Key loaded:', API_KEY.substring(0, 10) + '...');
+}
+
 let aiClient: GoogleGenAI | null = null;
 
 const getClient = (): GoogleGenAI => {
   if (!aiClient) {
+    console.log('🤖 Initializing Gemini AI client...');
     aiClient = new GoogleGenAI({ apiKey: API_KEY });
   }
   return aiClient;

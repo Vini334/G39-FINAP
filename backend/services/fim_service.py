@@ -18,6 +18,7 @@ class FIMService:
         genai.configure(api_key=settings.GEMINI_API_KEY)
 
         # Model name for text generation (using older SDK version)
+        # Note: This uses the text-bison model which is compatible with the old SDK
         self.model_name = 'models/text-bison-001'
 
         self.db = None
@@ -195,7 +196,29 @@ INFORMAÇÕES DO USUÁRIO:
             }
 
         except Exception as e:
-            # Fallback response if API fails
+            print(f"Error in FIM chat: {str(e)}")
+
+            # Check if it's an API key issue
+            if "404" in str(e) or "NotFound" in str(e):
+                fim_message = """E aí! 👋 Sou o FIM, seu assistente financeiro!
+
+⚠️ **Modo Demo Ativo** - A API key do Gemini precisa ser configurada.
+
+Enquanto isso, posso te ajudar com:
+• Dicas de economia
+• Explicar conceitos financeiros
+• Analisar seus gastos
+• Definir metas
+
+Como posso te ajudar hoje? 💰"""
+
+                return {
+                    "response": fim_message,
+                    "suggestions": ["Como economizar?", "O que são juros?", "Ver meus gastos"],
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+
+            # Fallback response for other errors
             return {
                 "response": "Opa, deu um problema aqui! 😅 Tenta de novo em alguns segundos, tá?",
                 "suggestions": ["Ver meus gastos", "Dicas de economia", "Como funciona o FINAP?"],

@@ -117,9 +117,9 @@ export const Profile: React.FC<ProfileProps> = ({ stats, onBack, onNavigate }) =
          <div className="relative mb-3 group">
              {/* Main Avatar */}
              <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-indigo-100 relative z-10">
-                <img 
-                   src="https://api.dicebear.com/9.x/avataaars/svg?seed=Alex&backgroundColor=c0aede" 
-                   alt="Profile" 
+                <img
+                   src="/assets/profilePic.png"
+                   alt="Profile"
                    className="w-full h-full object-cover"
                 />
              </div>
