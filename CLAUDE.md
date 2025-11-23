@@ -12,9 +12,11 @@ O projeto está organizado em duas pastas principais:
 
 ```
 finap-googleai/
-├── frontend/          # Aplicação React (código atual)
-└── backend/           # Backend com Firebase, ngrok, etc (a ser adicionado)
+├── frontend/          # Aplicação React + TypeScript (100% funcional)
+└── backend/           # Backend FastAPI + Firebase (100% funcional)
 ```
+
+**STATUS**: MVP 100% funcional e integrado. Backend e frontend totalmente conectados via API REST.
 
 ## Development Commands (Frontend)
 

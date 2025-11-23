@@ -54,12 +54,22 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // Don't try to refresh token for login/register endpoints
+      const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
+                            originalRequest.url?.includes('/auth/register');
+
+      if (isAuthEndpoint) {
+        // For login/register failures, just return the error
+        return Promise.reject(error);
+      }
+
       try {
         // Try to refresh the token
         const refreshToken = localStorage.getItem('refresh_token');
 
         if (!refreshToken) {
-          // No refresh token, redirect to login
+          // No refresh token, clear data but don't redirect
+          // Let the calling component handle the navigation
           throw new Error('No refresh token available');
         }
 
@@ -80,13 +90,11 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, clear tokens and redirect to login
+        // Refresh failed, clear tokens but don't redirect
+        // Let the calling component handle the navigation
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
-
-        // Redirect to login page
-        window.location.href = '/login';
 
         return Promise.reject(refreshError);
       }
@@ -127,16 +135,51 @@ export const getErrorMessage = (error: any): string => {
 
     if (apiError?.detail) {
       if (typeof apiError.detail === 'string') {
-        return apiError.detail;
+        const detail = apiError.detail;
+
+        // Customize error messages for better user experience
+        if (detail.toLowerCase().includes('invalid credentials') ||
+            detail.toLowerCase().includes('incorrect') ||
+            detail.toLowerCase().includes('wrong')) {
+          return 'Email ou senha incorretos';
+        }
+
+        if (detail.toLowerCase().includes('user not found') ||
+            detail.toLowerCase().includes('não encontrado') ||
+            detail.toLowerCase().includes('cadastre-se')) {
+          return 'Email não cadastrado. Por favor, cadastre-se primeiro.';
+        }
+
+        if (detail.toLowerCase().includes('already exists') ||
+            detail.toLowerCase().includes('already registered') ||
+            detail.toLowerCase().includes('já está cadastrado')) {
+          return 'Este email já está cadastrado. Tente fazer login.';
+        }
+
+        if (detail.toLowerCase().includes('desativada')) {
+          return 'Sua conta está desativada. Entre em contato com o suporte.';
+        }
+
+        return detail;
       } else if (Array.isArray(apiError.detail)) {
-        return apiError.detail[0]?.msg || 'Erro desconhecido';
+        return apiError.detail[0]?.msg || 'Erro de validação';
       }
+    }
+
+    // Network errors
+    if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
+      return 'Erro de conexão. Verifique sua internet e tente novamente.';
+    }
+
+    // Timeout errors
+    if (error.code === 'ECONNABORTED') {
+      return 'A requisição demorou muito. Tente novamente.';
     }
 
     return error.message || 'Erro de conexão';
   }
 
-  return 'Erro desconhecido';
+  return 'Erro inesperado. Tente novamente.';
 };
 
 export default api;
