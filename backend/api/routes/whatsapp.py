@@ -4,6 +4,16 @@ API endpoints for WhatsApp webhook integration with Meta API.
 Based on docs/API.md and docs/ARCHITECTURE.md
 """
 
+import sys
+
+# Fix Windows UTF-8 encoding for emojis
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 from fastapi import APIRouter, Request, Response, HTTPException, Query
 from fastapi.responses import PlainTextResponse, JSONResponse
 from typing import Optional, Dict, Any
