@@ -213,7 +213,7 @@ finap/
 
 ### Documentos Principais
 
-- [Arquitetura do Sistema](DOCUMENTO_ESCOPO_ENTREGA.md)
+- [Arquitetura/Didática do Projeto](DOCUMENTO_ESCOPO_ENTREGA.md)
 - [API Documentation](docs/api/API.md)
 - [Guia de Desenvolvimento](docs/guides/DEVELOPMENT.md)
 - [Plano de Fases](docs/PHASES.md)
