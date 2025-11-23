@@ -1,51 +1,79 @@
 """
 WhatsApp Service
-Business logic for WhatsApp integration using Twilio.
+Business logic for WhatsApp integration using Meta WhatsApp Business API.
 Based on docs/PROJECT_CONFIG.md and docs/ARCHITECTURE.md
 """
 
-from twilio.rest import Client
-from twilio.twiml.messaging_response import MessagingResponse
 from core.config import settings
 from typing import Dict, Optional
 import re
+import httpx
+import json
 
 
 class WhatsAppService:
     """Service for WhatsApp message processing and integration"""
 
     def __init__(self):
-        """Initialize Twilio client"""
-        self.client = Client(
-            settings.TWILIO_ACCOUNT_SID,
-            settings.TWILIO_AUTH_TOKEN
-        )
-        self.whatsapp_number = settings.TWILIO_WHATSAPP_NUMBER
+        """Initialize Meta WhatsApp Business API client"""
+        self.api_token = settings.META_WHATSAPP_TOKEN
+        self.phone_number_id = settings.META_WHATSAPP_PHONE_ID
+        self.api_version = settings.META_WHATSAPP_API_VERSION
+        self.base_url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}"
 
     async def send_message(
         self,
         to: str,
         body: str,
         media_url: Optional[str] = None
-    ) -> str:
+    ) -> Dict:
         """
-        Send message via WhatsApp.
+        Send message via WhatsApp using Meta API.
 
         Args:
-            to: Recipient phone number (e.g., '+5511999999999')
+            to: Recipient phone number (e.g., '5511999999999' - without + or whatsapp:)
             body: Message text
             media_url: Optional media URL to attach
 
         Returns:
-            Message SID
+            Response dict with message_id
         """
-        message = self.client.messages.create(
-            from_=f'whatsapp:{self.whatsapp_number}',
-            to=f'whatsapp:{to}',
-            body=body,
-            media_url=[media_url] if media_url else []
-        )
-        return message.sid
+        # Remove caracteres não numéricos do número
+        clean_number = re.sub(r'[^\d]', '', to)
+
+        url = f"{self.base_url}/messages"
+        headers = {
+            "Authorization": f"Bearer {self.api_token}",
+            "Content-Type": "application/json"
+        }
+
+        # Payload básico para mensagem de texto
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": clean_number,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": body
+            }
+        }
+
+        # Se houver mídia, muda o tipo da mensagem
+        if media_url:
+            payload["type"] = "image"
+            payload["image"] = {
+                "link": media_url
+            }
+            # Remove o campo text quando enviar imagem
+            del payload["text"]
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            result = response.json()
+
+        return result
 
     async def process_incoming_message(
         self,
@@ -290,16 +318,28 @@ Baixe o app em: [link do app]"""
             # If data is missing keys, return error message
             return templates['error']
 
-    def create_twiml_response(self, message: str) -> str:
+    async def mark_message_as_read(self, message_id: str) -> Dict:
         """
-        Create TwiML response for Twilio webhook.
+        Mark message as read in Meta WhatsApp API.
 
         Args:
-            message: Message text to send
+            message_id: ID of the message to mark as read
 
         Returns:
-            TwiML XML string
+            API response
         """
-        response = MessagingResponse()
-        response.message(message)
-        return str(response)
+        url = f"{self.base_url}/messages"
+        headers = {
+            "Authorization": f"Bearer {self.api_token}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "messaging_product": "whatsapp",
+            "status": "read",
+            "message_id": message_id
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            return response.json()

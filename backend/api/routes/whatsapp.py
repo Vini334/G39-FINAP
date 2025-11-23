@@ -1,12 +1,12 @@
 """
 WhatsApp Routes
-API endpoints for WhatsApp webhook integration.
+API endpoints for WhatsApp webhook integration with Meta API.
 Based on docs/API.md and docs/ARCHITECTURE.md
 """
 
-from fastapi import APIRouter, Request, Response, HTTPException, Form
-from fastapi.responses import PlainTextResponse
-from typing import Optional
+from fastapi import APIRouter, Request, Response, HTTPException, Query
+from fastapi.responses import PlainTextResponse, JSONResponse
+from typing import Optional, Dict, Any
 from datetime import datetime
 
 from services.whatsapp_service import WhatsAppService
@@ -14,6 +14,7 @@ from services.transaction_service import TransactionService
 from models.transaction import Transaction, TransactionType, TransactionSource
 from schemas.transaction import TransactionCreate
 from core.database import get_firestore_client
+from core.config import settings
 
 
 router = APIRouter()
@@ -21,102 +22,143 @@ whatsapp_service = WhatsAppService()
 transaction_service = TransactionService()
 
 
-@router.post("/webhook")
-async def whatsapp_webhook(
-    Body: str = Form(...),
-    From: str = Form(...),
-    To: Optional[str] = Form(None),
-    MessageSid: Optional[str] = Form(None)
-) -> Response:
+@router.get("/webhook")
+async def verify_webhook(
+    hub_mode: str = Query(alias="hub.mode"),
+    hub_verify_token: str = Query(alias="hub.verify_token"),
+    hub_challenge: str = Query(alias="hub.challenge")
+):
     """
-    Twilio WhatsApp webhook endpoint.
-    Receives messages from users and processes them.
-
-    This endpoint receives POST requests from Twilio when a user sends
-    a WhatsApp message to the configured number.
+    Meta WhatsApp webhook verification endpoint (GET).
+    A Meta faz uma requisição GET para verificar o webhook.
 
     Args:
-        Body: Message text
-        From: Sender phone number (e.g., 'whatsapp:+5511999999999')
-        To: Recipient phone number (our WhatsApp number)
-        MessageSid: Twilio message ID
+        hub_mode: Deve ser 'subscribe'
+        hub_verify_token: Token de verificação
+        hub_challenge: Código de desafio a ser retornado
 
     Returns:
-        TwiML response to send back to user
+        Challenge string se verificado com sucesso
+    """
+    print(f"📞 Webhook verification request")
+    print(f"Mode: {hub_mode}, Token: {hub_verify_token}")
+
+    if hub_mode == "subscribe" and hub_verify_token == settings.META_WHATSAPP_VERIFY_TOKEN:
+        print("✅ Webhook verified successfully")
+        return int(hub_challenge)
+    else:
+        print("❌ Webhook verification failed")
+        raise HTTPException(status_code=403, detail="Verification failed")
+
+
+@router.post("/webhook")
+async def whatsapp_webhook(request: Request) -> Dict[str, str]:
+    """
+    Meta WhatsApp webhook endpoint (POST).
+    Receives messages from users and processes them.
+
+    This endpoint receives POST requests from Meta when a user sends
+    a WhatsApp message to the configured number.
+
+    Returns:
+        JSON response confirming receipt
     """
     try:
-        # Extract phone number (remove 'whatsapp:' prefix)
-        phone_number = From.replace('whatsapp:', '')
+        # Parse incoming webhook data
+        body = await request.json()
+        print(f"📱 Webhook received: {body}")
 
-        print(f"📱 WhatsApp message received from {phone_number}: {Body}")
+        # Meta sends the webhook in this format
+        if body.get("object") == "whatsapp_business_account":
+            entries = body.get("entry", [])
 
-        # Process the message
-        parsed_data = await whatsapp_service.process_incoming_message(
-            from_number=phone_number,
-            body=Body
-        )
+            for entry in entries:
+                changes = entry.get("changes", [])
 
-        print(f"🔍 Parsed intent: {parsed_data.get('intent')}")
+                for change in changes:
+                    value = change.get("value", {})
 
-        # Get user by phone number
-        user = await get_user_by_phone(phone_number)
+                    # Check if it's a message
+                    messages = value.get("messages", [])
 
-        if not user:
-            # User not found - send registration message
-            response_text = whatsapp_service.format_response(
-                'user_not_found',
-                {}
-            )
-            twiml = whatsapp_service.create_twiml_response(response_text)
-            return PlainTextResponse(content=twiml, media_type="application/xml")
+                    for message in messages:
+                        message_id = message.get("id")
+                        from_number = message.get("from")  # Número do remetente
+                        message_type = message.get("type")
 
-        user_id = user['uid']
+                        print(f"📨 Message from {from_number}, type: {message_type}")
 
-        # Handle different intents
-        intent = parsed_data.get('intent')
+                        # Processar apenas mensagens de texto
+                        if message_type == "text":
+                            text_body = message.get("text", {}).get("body", "")
 
-        if intent == 'expense':
-            # Create expense transaction
-            response_text = await handle_expense(
-                user_id=user_id,
-                amount=parsed_data['amount'],
-                description=parsed_data['description'],
-                category=parsed_data['category']
-            )
+                            print(f"💬 Text: {text_body}")
 
-        elif intent == 'income':
-            # Create income transaction
-            response_text = await handle_income(
-                user_id=user_id,
-                amount=parsed_data['amount'],
-                description=parsed_data['description']
-            )
+                            # Marcar mensagem como lida
+                            try:
+                                await whatsapp_service.mark_message_as_read(message_id)
+                            except Exception as e:
+                                print(f"⚠️ Could not mark as read: {e}")
 
-        elif intent == 'balance':
-            # Get balance summary
-            response_text = await handle_balance(user_id=user_id)
+                            # Processar a mensagem
+                            parsed_data = await whatsapp_service.process_incoming_message(
+                                from_number=from_number,
+                                body=text_body
+                            )
 
-        elif intent == 'help':
-            # Send help message
-            response_text = whatsapp_service.format_response('help', {})
+                            print(f"🔍 Parsed intent: {parsed_data.get('intent')}")
 
-        else:
-            # Unknown intent - send error message
-            response_text = whatsapp_service.format_response('error', {})
+                            # Buscar usuário pelo telefone
+                            user = await get_user_by_phone(from_number)
 
-        # Create TwiML response
-        twiml = whatsapp_service.create_twiml_response(response_text)
+                            if not user:
+                                # Usuário não encontrado
+                                response_text = whatsapp_service.format_response('user_not_found', {})
+                                await whatsapp_service.send_message(from_number, response_text)
+                                continue
 
-        print(f"✅ Response sent: {response_text[:50]}...")
+                            user_id = user['uid']
 
-        return PlainTextResponse(content=twiml, media_type="application/xml")
+                            # Processar diferentes tipos de intent
+                            intent = parsed_data.get('intent')
+
+                            if intent == 'expense':
+                                response_text = await handle_expense(
+                                    user_id=user_id,
+                                    amount=parsed_data['amount'],
+                                    description=parsed_data['description'],
+                                    category=parsed_data['category']
+                                )
+
+                            elif intent == 'income':
+                                response_text = await handle_income(
+                                    user_id=user_id,
+                                    amount=parsed_data['amount'],
+                                    description=parsed_data['description']
+                                )
+
+                            elif intent == 'balance':
+                                response_text = await handle_balance(user_id=user_id)
+
+                            elif intent == 'help':
+                                response_text = whatsapp_service.format_response('help', {})
+
+                            else:
+                                response_text = whatsapp_service.format_response('error', {})
+
+                            # Enviar resposta
+                            await whatsapp_service.send_message(from_number, response_text)
+                            print(f"✅ Response sent: {response_text[:50]}...")
+
+        # Meta espera um 200 OK response
+        return {"status": "ok"}
 
     except Exception as e:
-        print(f"❌ Error processing WhatsApp message: {e}")
-        # Send error message to user
-        error_response = whatsapp_service.format_response('error', {})
-        twiml = whatsapp_service.create_twiml_response(error_response)
-        return PlainTextResponse(content=twiml, media_type="application/xml")
+        print(f"❌ Error processing webhook: {e}")
+        import traceback
+        traceback.print_exc()
+        # Ainda retornar 200 para não causar retries da Meta
+        return {"status": "error", "message": str(e)}
 
 
 async def get_user_by_phone(phone_number: str) -> Optional[dict]:

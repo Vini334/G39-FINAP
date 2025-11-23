@@ -17,7 +17,6 @@ email-validator==2.1.0
 firebase-admin==6.2.0
 
 # External APIs
-twilio==8.10.0
 google-generativeai  # Latest compatible version
 
 # Authentication & Security
