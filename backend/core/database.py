@@ -3,6 +3,7 @@ Database Configuration
 Firebase Firestore initialization and connection.
 """
 
+import sys
 import firebase_admin
 from firebase_admin import credentials, firestore
 from core.config import settings
@@ -10,6 +11,14 @@ import json
 import os
 from pathlib import Path
 from typing import Optional
+
+# Fix Windows UTF-8 encoding for emojis
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except:
+        pass
 
 
 # Global Firestore client

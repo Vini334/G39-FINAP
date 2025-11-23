@@ -5,10 +5,17 @@ This is the FastAPI application entry point for FINAP.
 Based on architecture defined in docs/ARCHITECTURE.md
 """
 
+import sys
+import os
+
+# Fix Windows UTF-8 encoding for emojis
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-import os
 from dotenv import load_dotenv
 
 # Load environment variables
