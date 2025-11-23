@@ -39,9 +39,13 @@ class Settings(BaseSettings):
 
     # External APIs
     GEMINI_API_KEY: str = ""
-    TWILIO_ACCOUNT_SID: str = ""
-    TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_WHATSAPP_NUMBER: str = ""
+
+    # Meta WhatsApp Business API
+    META_WHATSAPP_TOKEN: str = ""
+    META_WHATSAPP_PHONE_ID: str = ""
+    META_WHATSAPP_API_VERSION: str = "v22.0"
+    META_WHATSAPP_VERIFY_TOKEN: str = "finap_webhook_verify_token_2025"
+    META_WHATSAPP_FROM_NUMBER: str = ""
 
     class Config:
         env_file = ".env"
