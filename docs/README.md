@@ -822,7 +822,7 @@ Gamificação baseada em psicologia comportamental
 
 MVP totalmente funcional
 
-##✅ 3. Qualidade Técnica
+✅ ##3. Qualidade Técnica
 
 Backend FastAPI + Frontend React/TS + Firebase
 
