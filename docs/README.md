@@ -794,13 +794,13 @@ Mês 7-12 (Crescimento):
 
 ---
 
-### 📊 Resumo Executivo (Versão Objetiva)
+## 📊 Resumo Executivo (Versão Objetiva)
 
-##Por que o FINAP é diferente?
+###Por que o FINAP é diferente?
 
 O FINAP não é só um app de finanças: ele é uma plataforma completa de mudança de comportamento financeiro, unindo IA, gamificação e WhatsApp.
 
-## ✅ 1. Clareza e Didática
+### ✅ 1. Clareza e Didática
 
 Documentação completa e organizada
 
@@ -810,7 +810,7 @@ Problema, solução e público-alvo explicados com precisão
 
 Jornada do usuário mapeada do início ao fim
 
-## ✅ 2. Inovação e Aplicabilidade
+### ✅ 2. Inovação e Aplicabilidade
 
 Combina Gamificação + IA + WhatsApp em uma única solução
 
@@ -822,7 +822,7 @@ Gamificação baseada em psicologia comportamental
 
 MVP totalmente funcional
 
-## ✅ 3. Qualidade Técnica
+### ✅ 3. Qualidade Técnica
 
 Backend FastAPI + Frontend React/TS + Firebase
 
@@ -834,7 +834,7 @@ Arquitetura escalável estilo serverless
 
 Código limpo, componentizado e padronizado
 
-## ✅ 4. Sustentabilidade e Riscos
+### ✅ 4. Sustentabilidade e Riscos
 
 Modelo freemium realista
 
