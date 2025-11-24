@@ -149,8 +149,8 @@ React 19 + TypeScript + Vite
 
 #### 1. Clone o Repositório
 ```bash
-git clone https://github.com/seu-usuario/finap-googleai.git
-cd finap-googleai
+git clone https://github.com/Vini334/G39-FINAP.git
+cd G39-FINAP
 ```
 
 #### 2. Backend Setup
@@ -197,8 +197,6 @@ npm run dev
 **Frontend estará em:** http://localhost:3000
 
 ### 🧪 Testando o App
-
-Siga o guia completo de testes: **[GUIA-TESTE-COMPLETO-FINAP.md](./GUIA-TESTE-COMPLETO-FINAP.md)**
 
 **Teste Rápido:**
 1. Acesse http://localhost:3000
@@ -273,10 +271,6 @@ finap-googleai/
 │
 ├── 📄 ANALISE_BACKEND_INTEGRACAO.md      # Análise técnica
 ├── 📄 GUIA-TESTE-COMPLETO-FINAP.md       # 🧪 Guia de testes
-├── 📄 RESUMO-INTEGRACAO-BACKEND-FRONTEND.md  # 📊 Resumo integração
-├── 📄 FASE1_CONCLUIDA.md
-├── 📄 FASE2_PROGRESSO.md
-├── 📄 CLAUDE.md                   # Instruções para IA
 ├── 📄 .gitignore
 └── 📄 README.md                   # Este arquivo
 ```
@@ -287,12 +281,9 @@ finap-googleai/
 
 | Documento | Descrição |
 |-----------|-----------|
-| [DOCUMENTO_ESCOPO_ENTREGA](./DOCUMENTO_ESCOPO_ENTREGA.md) | 📊 Escopo com arquitetura e didática |
 | [GUIA-TESTE-COMPLETO-FINAP.md](./GUIA-TESTE-COMPLETO-FINAP.md) | 🧪 Passo a passo completo para testar todas funcionalidades |
-| [RESUMO-INTEGRACAO-BACKEND-FRONTEND.md](./RESUMO-INTEGRACAO-BACKEND-FRONTEND.md) | 📊 Resumo técnico da integração |
 | [ANALISE_BACKEND_INTEGRACAO.md](./ANALISE_BACKEND_INTEGRACAO.md) | 🔍 Análise detalhada do backend |
 | [CHANGELOG.md](./CHANGELOG.md) | 📚 Histórico de desenvolvimento |
-| [CLAUDE.md](./CLAUDE.md) | 🤖 Instruções para Claude Code |
 
 ### 🔗 Links Úteis
 
@@ -368,12 +359,15 @@ POST /api/v1/learning/submit-quiz       # Enviar quiz
 - [ ] Implementar auto-refresh de tokens
 - [ ] Adicionar upload de avatar personalizado
 - [ ] Implementar edição de perfil completa
+- [ ] Criação da função Dividir valores
+- [ ] Gerar relatório mensal com analise de sentimento e previsão de gastos
 
 ### Fase 3 - Escalabilidade
 - [ ] Adicionar analytics e métricas de uso
 - [ ] Implementar rate limiting
 - [ ] Testes automatizados (pytest + jest)
 - [ ] Ativar integração WhatsApp
+- [ ] Integrar o Open Finance
 
 ### Fase 4 - Produção
 - [ ] CI/CD com GitHub Actions
