@@ -404,7 +404,7 @@ Este projeto é proprietário. Todos os direitos reservados.
 - **DiceBear** - Avatares
 
 ### Time
-- Desenvolvido com ❤️ pela equipe FINAP
+- Desenvolvido com ❤️ pela equipe FINAP (grupo 39)
 
 ---
 
