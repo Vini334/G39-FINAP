@@ -95,6 +95,15 @@ O FINAP combina **três pilares únicos** que nenhum concorrente oferece simulta
 
 ---
 
+## 🎬 Demo
+
+### Video do FINAP
+Aqui está uma demonstração do FINAP em funcionamento. Nesta versão do app, você consegue ver na prática como as principais funções se conectam — da gamificação ao assistente FIM, passando pelo dashboard, gestão de gastos e trilhas de aprendizado. A ideia é mostrar como tudo flui de forma simples, rápida e intuitiva, exatamente como o usuário vivencia no dia a dia.
+
+Link youtube: https://youtube.com/shorts/NNVhkVN4nFE?feature=share
+
+---
+
 ## 🏗️ Arquitetura
 
 ### Visão Geral da Arquitetura
@@ -549,7 +558,7 @@ G39-FINAP/
 └── 📄 README.md                   # Este arquivo
 ```
 
-## 🎬 Demo
+
 
 ### Como Executar o Projeto
 
@@ -794,7 +803,7 @@ Mês 7-12 (Crescimento):
 
 ---
 
-## 📊 Resumo Executivo (Versão Objetiva)
+## 📊 Resumo Executivo
 
 ### Por que o FINAP é diferente?
 
@@ -861,7 +870,10 @@ Foco profundo em jovens brasileiros
 ## Impacto Esperado
 
 Social: reduzir endividamento e democratizar educação financeira
+
+
 Econômico: modelo sustentável e expansível
+
 Tecnológico: referência nacional em IA aplicada à educação financeira
 ---
 
