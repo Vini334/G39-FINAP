@@ -100,7 +100,7 @@ O FINAP combina **três pilares únicos** que nenhum concorrente oferece simulta
 ### Video do FINAP
 Aqui está uma demonstração do FINAP em funcionamento. Nesta versão do app, você consegue ver na prática como as principais funções se conectam — da gamificação ao assistente FIM, passando pelo dashboard, gestão de gastos e trilhas de aprendizado. A ideia é mostrar como tudo flui de forma simples, rápida e intuitiva, exatamente como o usuário vivencia no dia a dia.
 
-Link youtube: https://youtube.com/shorts/NNVhkVN4nFE?feature=share
+Link youtube: [https://youtube.com/shorts/NNVhkVN4nFE?feature=share](https://www.youtube.com/watch?v=Iu8xHGwckWo)
 
 ---
 
@@ -189,6 +189,9 @@ Link youtube: https://youtube.com/shorts/NNVhkVN4nFE?feature=share
 - 📚 **Academia de Cursos**: Trilhas de aprendizado gamificadas
 - 💰 **Gestão de Gastos**: Rastreamento e categorização automática
 - 📱 **Integração WhatsApp**: Registre gastos via mensagem (backend pronto)
+ <p align="center">
+   <img width="300" height="350" alt="image" src="https://github.com/user-attachments/assets/66ce7929-5458-454f-9899-6c2b43963d65" />
+ </p>
 
 ## 🚀 Status do Projeto
 
@@ -597,7 +600,6 @@ Acesse [http://localhost:8000/docs](http://localhost:8000/docs) para ver todos o
 |-----------|-----------|
 | **[DOCUMENTO_ESCOPO_ENTREGA.md](./DOCUMENTO_ESCOPO_ENTREGA.md)** | 📄 **Documento completo de escopo para avaliação** |
 | [GUIA-TESTE-COMPLETO-FINAP.md](./GUIA-TESTE-COMPLETO-FINAP.md) | 🧪 Passo a passo completo para testar todas funcionalidades |
-| [docs/docs/ARCHITECTURE.md](./docs/docs/ARCHITECTURE.md) | 🏗️ Arquitetura detalhada do sistema |
 
 ### 🔗 Links Úteis
 
