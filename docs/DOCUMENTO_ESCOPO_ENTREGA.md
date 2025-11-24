@@ -834,7 +834,7 @@ Solicitamos a **aprovação deste escopo** para avançar para a próxima fase do
 
 ## 📞 CONTATO
 
-**Repositório:** [GitHub - finap-googleai]
+**Repositório:** [https://github.com/Vini334/G39-FINAP.git]
 **Documentação Completa:** `/docs`
 **API Docs:** `http://localhost:8000/docs` (Swagger)
 **Demo:** `http://localhost:3000`
