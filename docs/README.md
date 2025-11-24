@@ -796,7 +796,7 @@ Mês 7-12 (Crescimento):
 
 ## 📊 Resumo Executivo (Versão Objetiva)
 
-###Por que o FINAP é diferente?
+### Por que o FINAP é diferente?
 
 O FINAP não é só um app de finanças: ele é uma plataforma completa de mudança de comportamento financeiro, unindo IA, gamificação e WhatsApp.
 
