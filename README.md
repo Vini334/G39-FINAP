@@ -96,8 +96,8 @@ Com o assistente virtual **FIM** (powered by Google Gemini AI), os usuarios apre
 
 #### 1. Clone o repositorio
 ```bash
-git clone <url-do-repositorio>
-cd finap-googleai
+git clone https://github.com/Vini334/G39-FINAP.git
+cd G39-FINAP
 ```
 
 #### 2. Backend
@@ -219,7 +219,6 @@ python scripts/test_whatsapp_meta.py    # Testar integracao WhatsApp
 
 ## Documentacao
 
-- [CLAUDE.md](./CLAUDE.md) - Instrucoes para desenvolvimento com Claude Code
 - [DOCUMENTO_ESCOPO_ENTREGA.md](./DOCUMENTO_ESCOPO_ENTREGA.md) - Escopo completo do MVP
 - [GUIA-SETUP-WHATSAPP-META.md](./GUIA-SETUP-WHATSAPP-META.md) - Configuracao WhatsApp
 
@@ -280,3 +279,4 @@ Este projeto e proprietario. Todos os direitos reservados.
 
 **FINAP - Educacao Financeira para a Geracao Z**
 Versao 1.0.0 | MVP Completo
+
