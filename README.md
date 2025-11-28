@@ -52,6 +52,19 @@ Com o assistente virtual **FIM** (powered by Google Gemini AI), os usuarios apre
 - Divisao personalizada entre participantes
 - Visualizacao de saldos (quem deve/recebe)
 
+### Squad Goal (Cofrinho em Conjunto)
+- Poupanca colaborativa com amigos para objetivos comuns
+- Meta compartilhada com prazo e valor definidos
+- Contribuicao mensal por participante
+- Acompanhamento de progresso individual (on-track/late)
+- Transparencia: visualize quanto cada membro economizou
+- Ideal para viagens, eventos ou compras em grupo
+
+### Ranking Semanal
+- Leaderboard com XP semanal entre amigos
+- Competicao saudavel para engajamento
+- Visualizacao de posicao no ranking do Squad
+
 ### Integracao WhatsApp (Backend pronto)
 - Registre gastos via mensagem
 - Consulte saldo e extrato
@@ -238,6 +251,8 @@ python scripts/test_whatsapp_meta.py    # Testar integracao WhatsApp
 | Learning/Trilhas | Completo |
 | WhatsApp | Backend pronto |
 | Dividir Conta | Completo (mock) |
+| Squad Goal (Cofrinho) | Completo (mock) |
+| Ranking Semanal | Completo (mock) |
 
 **MVP Completo e Funcional**
 

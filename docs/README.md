@@ -189,6 +189,8 @@ Link youtube: [https://youtube.com/shorts/NNVhkVN4nFE?feature=share](https://www
 - 📚 **Academia de Cursos**: Trilhas de aprendizado gamificadas
 - 💰 **Gestão de Gastos**: Rastreamento e categorização automática
 - 📱 **Integração WhatsApp**: Registre gastos via mensagem (backend pronto)
+- 🎯 **Squad Goal**: Cofrinho em conjunto para metas compartilhadas
+- 🏆 **Ranking Semanal**: Competição saudável entre amigos
  <p align="center">
    <img width="300" height="350" alt="image" src="https://github.com/user-attachments/assets/66ce7929-5458-454f-9899-6c2b43963d65" />
  </p>
@@ -206,6 +208,9 @@ Link youtube: [https://youtube.com/shorts/NNVhkVN4nFE?feature=share](https://www
 | **FIM (Assistente IA)** | 100% | ✅ Completo |
 | **Learning/Trilhas** | 100% | ✅ Completo (com mock data) |
 | **WhatsApp** | 100% | ✅ Backend pronto |
+| **Dividir Conta** | 100% | ✅ Completo (mock) |
+| **Squad Goal (Cofrinho)** | 100% | ✅ Completo (mock) |
+| **Ranking Semanal** | 100% | ✅ Completo (mock) |
 | **Integração Geral** | 100% | ✅ Funcional |
 
 **🎉 MVP Completo e funcional! Pronto para apresentação!**
@@ -317,6 +322,53 @@ FIM: "Opa, vi aqui que você gastou R$ 450 com delivery
 ```
 
 **Valor para o Usuário:** Registre gastos em segundos, sem abrir o app.
+
+### 7. Squad Goal (Cofrinho em Conjunto)
+
+**Poupança Colaborativa:**
+Um "cofrinho virtual em grupo" onde amigos economizam juntos para um objetivo comum (viagem, evento, compra coletiva).
+
+**Funcionalidades:**
+- **Meta Compartilhada**: Valor total e prazo definidos pelo grupo
+- **Contribuição Mensal**: Valor fixo por participante (ex: R$ 200/pessoa)
+- **Progresso em Tempo Real**: Barra de progresso do grupo
+- **Status Individual**: Cada membro tem status "on-track" (em dia) ou "late" (atrasado)
+- **Transparência Total**: Veja quanto cada pessoa economizou no mês
+
+**Exemplo Prático:**
+```
+Viagem de Verão - Florianópolis
+├── Meta: R$ 3.000 | Prazo: 15 Dez 2023
+├── Progresso: R$ 1.450 (48%)
+├── Contribuição: R$ 200/mês por pessoa
+└── Membros:
+    ├── Você: R$ 450 total | R$ 200 este mês ✅ ON-TRACK
+    ├── Sarah: R$ 400 total | R$ 200 este mês ✅ ON-TRACK
+    ├── Mike: R$ 300 total | R$ 50 este mês ⚠️ LATE
+    └── Jess: R$ 300 total | R$ 0 este mês ⚠️ LATE
+```
+
+**Valor para o Usuário:** Economize em grupo com accountability social e transparência.
+
+### 8. Ranking Semanal (Leaderboard)
+
+**Competição Saudável:**
+Sistema de ranking baseado em XP semanal entre membros do Squad.
+
+**Como Funciona:**
+- XP acumulado durante a semana determina posição
+- Ranking resetado toda segunda-feira
+- Visualização de posição e pontuação dos amigos
+
+**Exemplo:**
+```
+🏆 Ranking Semanal
+1º Você    - 1.250 XP
+2º Sarah   - 1.100 XP
+3º Mike    - 950 XP
+```
+
+**Valor para o Usuário:** Motivação extra através de competição amigável.
 
 ---
 
