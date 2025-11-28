@@ -18,6 +18,8 @@ class RegisterRequest(BaseModel):
     )
     name: str = Field(..., min_length=2, description="Full name")
     phone: Optional[str] = Field(None, description="Phone number (optional)")
+    monthly_income: Optional[float] = Field(None, description="Monthly income (R$)")
+    savings_goal: Optional[float] = Field(None, description="Monthly savings goal (R$)")
 
     @field_validator('password')
     @classmethod

@@ -834,8 +834,12 @@ Solicitamos a **aprovação deste escopo** para avançar para a próxima fase do
 
 ## 📞 CONTATO
 
+<<<<<<< HEAD:docs/DOCUMENTO_ESCOPO_ENTREGA.md
 **Repositório:** [https://github.com/Vini334/G39-FINAP.git]
 **Documentação Completa:** `/docs`
+=======
+**Repositório:** [GitHub - finap-googleai]
+>>>>>>> 827b2c2 (MVP pronto e funcional):DOCUMENTO_ESCOPO_ENTREGA.md
 **API Docs:** `http://localhost:8000/docs` (Swagger)
 **Demo:** `http://localhost:3000`
 
@@ -853,16 +857,20 @@ Solicitamos a **aprovação deste escopo** para avançar para a próxima fase do
 ```
 finap-googleai/
 ├── backend/              # API FastAPI
-│   ├── api/             # Rotas e endpoints
+│   ├── api/routes/      # Rotas e endpoints
 │   ├── core/            # Configurações e segurança
 │   ├── services/        # Lógica de negócio
-│   └── schemas/         # Validação Pydantic
+│   ├── schemas/         # Validação Pydantic
+│   ├── models/          # Modelos de dados
+│   └── scripts/         # Scripts auxiliares
 ├── frontend/            # React + TypeScript
 │   ├── components/      # Componentes reutilizáveis
-│   ├── views/          # Telas principais
-│   ├── services/       # API clients
-│   └── types/          # TypeScript types
-└── docs/               # Documentação completa
+│   ├── views/           # Telas principais
+│   ├── services/        # API clients
+│   ├── contexts/        # React Context (Auth, Gamification)
+│   ├── utils/           # Funções utilitárias
+│   └── types/           # TypeScript types
+└── credentials/         # Credenciais Firebase (gitignored)
 ```
 
 ### Anexo B: Endpoints da API (Lista Completa)

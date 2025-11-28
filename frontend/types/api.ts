@@ -12,6 +12,8 @@ export interface RegisterRequest {
   password: string;
   name: string;
   phone?: string;
+  monthly_income?: number;
+  savings_goal?: number;
 }
 
 export interface LoginRequest {
@@ -36,12 +38,22 @@ export interface UserGamification {
   last_login: string;
 }
 
+export interface UserProfile {
+  age?: number;
+  monthly_income?: number;
+  monthly_budget?: number;
+  savings_goal?: number;
+  financial_goals?: string[];
+  avatar_url?: string;
+}
+
 export interface UserData {
   uid: string;
   email: string;
   name: string;
   phone?: string;
   gamification: UserGamification;
+  profile?: UserProfile;
 }
 
 export interface AuthResponse {
@@ -158,12 +170,23 @@ export interface Mission {
   date: string;
 }
 
+export interface LearningProgress {
+  course_id: string;
+  course_title: string;
+  module_id: string;
+  module_title: string;
+  current_phase: number;
+  total_phases: number;
+  progress_percentage: number;
+  current_phase_id?: string;
+}
+
 export interface DashboardOverview {
   stats: DashboardStats;
   balance: BalanceInfo;
   budget_alert: BudgetAlert;
   missions: Mission[];
-  learning_progress?: any;
+  learning_progress?: LearningProgress;
 }
 
 // ==================

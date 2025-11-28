@@ -50,6 +50,12 @@ class UpdateChallengeProgressRequest(BaseModel):
     progress: float
 
 
+class UpdateMissionProgressRequest(BaseModel):
+    """Request to update mission progress by type"""
+    user_id: str
+    mission_type: str  # daily_login, add_transaction, complete_quiz, view_report, chat_fim
+
+
 # Response Schemas
 
 class LevelInfo(BaseModel):
@@ -199,6 +205,24 @@ class CompleteMissionResponse(BaseModel):
     message: str
 
 
+class MissionProgressResponse(BaseModel):
+    """Response after updating mission progress"""
+    success: bool
+    mission_id: str
+    mission_type: str
+    title: str
+    progress: int
+    target: int
+    completed: bool
+    xp_earned: int = 0
+    coins_earned: int = 0
+    total_xp: Optional[int] = None
+    total_coins: Optional[int] = None
+    level_up: bool = False
+    new_level: Optional[int] = None
+    message: str
+
+
 # Dashboard Schemas
 
 class BalanceInfo(BaseModel):
@@ -225,6 +249,18 @@ class CourseProgressInfo(BaseModel):
     total_modules: int
 
 
+class LearningProgressInfo(BaseModel):
+    """Learning progress for dashboard overview"""
+    course_id: str
+    course_title: str
+    module_id: str
+    module_title: str
+    current_phase: int
+    total_phases: int
+    progress_percentage: int
+    current_phase_id: Optional[str] = None
+
+
 class DashboardStats(BaseModel):
     """Dashboard statistics"""
     lives: int
@@ -243,7 +279,7 @@ class DashboardSummaryResponse(BaseModel):
     balance: BalanceInfo
     budget_alert: BudgetAlertInfo
     missions: List[MissionResponse]
-    learning_progress: Optional[CourseProgressInfo] = None
+    learning_progress: Optional[LearningProgressInfo] = None
 
     class Config:
         json_encoders = {

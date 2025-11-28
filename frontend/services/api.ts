@@ -162,7 +162,13 @@ export const getErrorMessage = (error: any): string => {
 
         return detail;
       } else if (Array.isArray(apiError.detail)) {
-        return apiError.detail[0]?.msg || 'Erro de validação';
+        // Pydantic validation errors
+        const firstError = apiError.detail[0];
+        if (firstError?.msg) {
+          // Retorna a mensagem de erro do Pydantic
+          return firstError.msg;
+        }
+        return 'Erro de validação';
       }
     }
 

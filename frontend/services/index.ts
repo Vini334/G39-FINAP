@@ -9,6 +9,8 @@ export { fimService } from './fimService';
 export { transactionService } from './transactionService';
 export { dashboardService } from './dashboardService';
 export { learningService } from './learningService';
+export { missionService } from './missionService';
 
 // Re-export types
 export type { APIResponse, APIError } from './api';
+export type { MissionProgressResult } from './missionService';

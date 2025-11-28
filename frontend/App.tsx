@@ -10,29 +10,41 @@ import { Login } from './views/Login';
 import { Register } from './views/Register';
 import { BottomNav } from './components/BottomNav';
 import { ViewState } from './types';
-import { INITIAL_USER_STATS, DAILY_MISSIONS, MOCK_TRANSACTIONS } from './constants';
-import { authService } from './services';
+import { AuthProvider, useAuth, GamificationProvider, useGamification } from './contexts';
 
-const App: React.FC = () => {
-  // Verificar autenticação ao iniciar e ao mudar de view
+// Inner App component that uses the contexts
+const AppContent: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const { stats } = useGamification();
+
   const [currentView, setCurrentView] = useState<ViewState>(() => {
-    const isAuthenticated = authService.isAuthenticated();
     return isAuthenticated ? ViewState.OVERVIEW : ViewState.ONBOARDING;
   });
 
-  // Reavaliar autenticação quando a view mudar
+  // Update view when authentication status changes
   useEffect(() => {
-    const isAuthenticated = authService.isAuthenticated();
-
-    // Se o usuário não está autenticado e está tentando acessar uma view protegida
-    if (!isAuthenticated &&
-        currentView !== ViewState.ONBOARDING &&
-        currentView !== ViewState.LOGIN &&
-        currentView !== ViewState.REGISTER) {
-      setCurrentView(ViewState.ONBOARDING);
+    if (!isLoading) {
+      if (!isAuthenticated &&
+          currentView !== ViewState.ONBOARDING &&
+          currentView !== ViewState.LOGIN &&
+          currentView !== ViewState.REGISTER) {
+        setCurrentView(ViewState.ONBOARDING);
+      }
     }
-  }, [currentView]);
-  
+  }, [isAuthenticated, isLoading, currentView]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-finap-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-finap-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   const renderView = () => {
     switch (currentView) {
       case ViewState.LOGIN:
@@ -40,23 +52,21 @@ const App: React.FC = () => {
       case ViewState.REGISTER:
         return <Register onNavigate={setCurrentView} />;
       case ViewState.ONBOARDING:
-        // When onboarding finishes, go to Overview
         return <Onboarding onComplete={() => setCurrentView(ViewState.OVERVIEW)} />;
       case ViewState.OVERVIEW:
         return <Overview onNavigate={setCurrentView} />;
       case ViewState.EXTRACT:
         return <Extract />;
       case ViewState.LEARN:
-        // Passed stats to Learn for the Lives system
-        return <Learn stats={INITIAL_USER_STATS} />;
+        return <Learn stats={stats} />;
       case ViewState.SOCIAL:
         return <Social />;
       case ViewState.ASSISTANT:
         return <Assistant />;
       case ViewState.PROFILE:
-        return <Profile stats={INITIAL_USER_STATS} onBack={() => setCurrentView(ViewState.OVERVIEW)} onNavigate={setCurrentView} />;
+        return <Profile stats={stats} onBack={() => setCurrentView(ViewState.OVERVIEW)} onNavigate={setCurrentView} />;
       default:
-        return <Overview stats={INITIAL_USER_STATS} missions={DAILY_MISSIONS} onNavigate={setCurrentView} />;
+        return <Overview onNavigate={setCurrentView} />;
     }
   };
 
@@ -75,6 +85,17 @@ const App: React.FC = () => {
           <BottomNav currentView={currentView} onNavigate={setCurrentView} />
        )}
     </div>
+  );
+};
+
+// Main App component with providers
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <GamificationProvider>
+        <AppContent />
+      </GamificationProvider>
+    </AuthProvider>
   );
 };
 

@@ -100,6 +100,15 @@ class AuthService {
   }
 
   /**
+   * Update user avatar
+   */
+  async updateAvatar(avatarUrl: string): Promise<UserData> {
+    return this.updateProfile({
+      profile: { avatar_url: avatarUrl }
+    });
+  }
+
+  /**
    * Delete user account
    */
   async deleteAccount(): Promise<void> {

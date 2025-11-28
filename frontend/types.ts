@@ -21,9 +21,16 @@ export interface Transaction {
 
 export interface Mission {
   id: string;
+  type?: string;
   title: string;
-  reward: number;
+  description?: string;
+  xp_reward?: number;
+  coins_reward?: number;
+  reward?: number; // Legacy: coins_reward alias
+  progress?: number;
+  target?: number;
   completed: boolean;
+  status?: 'pending' | 'completed' | 'expired';
 }
 
 export interface Message {
@@ -46,4 +53,42 @@ export interface UserStats {
   coins: number;
   lives: number;
   streak: number;
+}
+
+// ========== SPLIT BILL (Dividir Conta) TYPES ==========
+
+export interface SplitEvent {
+  id: string;
+  title: string;
+  date: string;
+  createdBy: string;
+  members: SplitMember[];
+  expenses: SplitExpense[];
+}
+
+export interface SplitMember {
+  id: string;
+  name: string;
+  avatar: string;
+  balance: number; // positivo = recebe, negativo = deve
+}
+
+export interface SplitExpense {
+  id: string;
+  description: string;
+  amount: number;
+  paidBy: string;
+  date: string;
+  splits: ExpenseSplit[];
+}
+
+export interface ExpenseSplit {
+  memberId: string;
+  amount: number;
+}
+
+export interface DebtDetail {
+  fromMemberId: string;
+  toMemberId: string;
+  amount: number;
 }

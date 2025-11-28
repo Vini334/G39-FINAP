@@ -1,4 +1,4 @@
-import { Mission, Transaction, UserStats, QuizQuestion } from './types';
+import { Mission, Transaction, UserStats, QuizQuestion, SplitEvent } from './types';
 
 export const INITIAL_USER_STATS: UserStats = {
   xp: 1250,
@@ -56,4 +56,88 @@ export const QUIZ_SAMPLE: QuizQuestion[] = [
     ],
     correctIndex: 1
   }
+];
+
+// ========== SPLIT BILL (Dividir Conta) MOCK DATA ==========
+
+export const MOCK_SPLIT_EVENTS: SplitEvent[] = [
+  {
+    id: 'se1',
+    title: 'Viagem de Juquey 13/11',
+    date: '13 Nov 2024',
+    createdBy: 'u1',
+    members: [
+      { id: 'u1', name: 'Você', avatar: 'Alex', balance: 0 },
+      { id: 'u2', name: 'Sarah', avatar: 'Sarah', balance: 0 },
+      { id: 'u3', name: 'Mike', avatar: 'Mike', balance: 0 },
+      { id: 'u4', name: 'Jess', avatar: 'Jess', balance: 0 },
+    ],
+    expenses: [
+      {
+        // Restaurante com divisão desigual (exemplo da cerveja)
+        id: 'exp1',
+        description: 'Restaurante Praia',
+        amount: 280.00,
+        paidBy: 'u1', // Você pagou
+        date: '13 Nov 2024',
+        splits: [
+          { memberId: 'u1', amount: 80.00 }, // Você bebeu cerveja
+          { memberId: 'u2', amount: 60.00 }, // Sarah não bebeu
+          { memberId: 'u3', amount: 80.00 }, // Mike bebeu cerveja
+          { memberId: 'u4', amount: 60.00 }, // Jess não bebeu
+        ]
+      },
+      {
+        // Uber dividido igualmente
+        id: 'exp2',
+        description: 'Uber para praia',
+        amount: 48.00,
+        paidBy: 'u2', // Sarah pagou
+        date: '13 Nov 2024',
+        splits: [
+          { memberId: 'u1', amount: 12.00 },
+          { memberId: 'u2', amount: 12.00 },
+          { memberId: 'u3', amount: 12.00 },
+          { memberId: 'u4', amount: 12.00 },
+        ]
+      },
+      {
+        // Airbnb pago por uma pessoa
+        id: 'exp3',
+        description: 'Airbnb (2 noites)',
+        amount: 400.00,
+        paidBy: 'u1', // Você pagou
+        date: '12 Nov 2024',
+        splits: [
+          { memberId: 'u1', amount: 100.00 },
+          { memberId: 'u2', amount: 100.00 },
+          { memberId: 'u3', amount: 100.00 },
+          { memberId: 'u4', amount: 100.00 },
+        ]
+      },
+      {
+        // Lanche no posto
+        id: 'exp4',
+        description: 'Lanche posto',
+        amount: 52.00,
+        paidBy: 'u3', // Mike pagou
+        date: '13 Nov 2024',
+        splits: [
+          { memberId: 'u1', amount: 13.00 },
+          { memberId: 'u2', amount: 13.00 },
+          { memberId: 'u3', amount: 13.00 },
+          { memberId: 'u4', amount: 13.00 },
+        ]
+      }
+    ]
+  }
+];
+
+// Membros disponíveis para convidar (mock de amigos)
+export const AVAILABLE_FRIENDS = [
+  { id: 'u2', name: 'Sarah', avatar: 'Sarah' },
+  { id: 'u3', name: 'Mike', avatar: 'Mike' },
+  { id: 'u4', name: 'Jess', avatar: 'Jess' },
+  { id: 'u5', name: 'Lucas', avatar: 'Lucas' },
+  { id: 'u6', name: 'Ana', avatar: 'Ana' },
 ];

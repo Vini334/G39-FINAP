@@ -349,6 +349,11 @@ firebase-adminsdk*.json
 google-services.json
 GoogleService-Info.plist
 
+# Pasta de credenciais (NUNCA commitar!)
+credentials/
+/credentials/
+**/credentials/
+
 # Arquivos .env com secrets
 .env.production
 .env.staging

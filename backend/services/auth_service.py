@@ -4,8 +4,9 @@ Handles user registration, login, and Firebase Auth integration.
 """
 
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
+import uuid
 from firebase_admin import auth as firebase_auth
 from core.database import get_firestore_client
 from core.security import verify_password, get_password_hash, create_access_token, create_refresh_token
@@ -102,7 +103,9 @@ class AuthService:
         email: str,
         password: str,
         name: str,
-        phone: Optional[str] = None
+        phone: Optional[str] = None,
+        monthly_income: Optional[float] = None,
+        savings_goal: Optional[float] = None
     ) -> Dict[str, Any]:
         """
         Register a new user with Firebase Auth and create Firestore profile.
@@ -112,6 +115,8 @@ class AuthService:
             password: User password (plain text)
             name: User full name
             phone: Optional phone number
+            monthly_income: Optional monthly income (R$)
+            savings_goal: Optional monthly savings goal (R$)
 
         Returns:
             Dictionary with user data and tokens
@@ -133,7 +138,15 @@ class AuthService:
             user_id = firebase_user.uid
 
             # 2. Create user profile in Firestore
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
+
+            # Calculate monthly_budget (spending limit) = income - savings goal
+            monthly_budget = None
+            if monthly_income is not None:
+                if savings_goal is not None and savings_goal > 0:
+                    monthly_budget = monthly_income - savings_goal
+                else:
+                    monthly_budget = monthly_income
 
             # Initial gamification stats
             gamification = UserGamification(
@@ -147,10 +160,12 @@ class AuthService:
                 last_login=now
             )
 
-            # Initial profile
+            # Initial profile with financial data
             profile = UserProfile(
                 age=None,
-                monthly_income=None,
+                monthly_income=monthly_income,
+                monthly_budget=monthly_budget,
+                savings_goal=savings_goal,
                 financial_goals=[],
                 avatar_url=None
             )
@@ -177,17 +192,38 @@ class AuthService:
 
             db.collection('users').document(user_id).set(user_data)
 
-            # 3. Generate JWT tokens
+            # 3. Create initial income transaction if monthly_income is provided
+            if monthly_income is not None and monthly_income > 0:
+                income_transaction = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "type": "income",
+                    "amount": monthly_income,
+                    "category": "salário",
+                    "description": "Receita mensal",
+                    "date": datetime(now.year, now.month, 1, tzinfo=timezone.utc),
+                    "source": "app",
+                    "tags": ["salário", "mensal"],
+                    "is_recurrent": True,
+                    "recurrence_period": "monthly",
+                    "created_at": now,
+                    "updated_at": now
+                }
+                db.collection('transactions').document(income_transaction['id']).set(income_transaction)
+
+            # 4. Generate JWT tokens
             access_token = create_access_token(data={"sub": user_id})
             refresh_token = create_refresh_token(data={"sub": user_id})
 
-            # 4. Return user data and tokens
+            # 5. Return user data and tokens
             return {
                 "user": {
                     "uid": user_id,
                     "email": email,
                     "name": name,
-                    "gamification": gamification.dict()
+                    "phone": phone,
+                    "gamification": gamification.dict(),
+                    "profile": profile.dict()
                 },
                 "tokens": {
                     "access_token": access_token,
@@ -256,7 +292,9 @@ class AuthService:
                     "uid": user_id,
                     "email": user_data.get('email'),
                     "name": user_data.get('name'),
-                    "gamification": user_data.get('gamification', {})
+                    "phone": user_data.get('phone'),
+                    "gamification": user_data.get('gamification', {}),
+                    "profile": user_data.get('profile', {})
                 },
                 "tokens": {
                     "access_token": access_token,

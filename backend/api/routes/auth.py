@@ -31,11 +31,17 @@ async def register(request: RegisterRequest):
     - password: Password (minimum 6 characters)
     - name: Full name
     - phone: Optional phone number
+    - monthly_income: Optional monthly income (R$)
+    - savings_goal: Optional monthly savings goal (R$)
 
     **Returns:**
     - User data
     - Access token (15 min expiration)
     - Refresh token (7 days expiration)
+
+    **Note:**
+    - monthly_budget (spending limit) is calculated as: monthly_income - savings_goal
+    - An income transaction is automatically created if monthly_income is provided
 
     **Status Codes:**
     - 201: User created successfully
@@ -46,7 +52,9 @@ async def register(request: RegisterRequest):
             email=request.email,
             password=request.password,
             name=request.name,
-            phone=request.phone
+            phone=request.phone,
+            monthly_income=request.monthly_income,
+            savings_goal=request.savings_goal
         )
 
         return APIResponse(

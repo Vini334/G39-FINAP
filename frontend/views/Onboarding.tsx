@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import { FimMascot } from '../components/FimMascot';
 import { ArrowRight, ArrowLeft, Mail, Lock, User, DollarSign, Target, CheckCircle2, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
-import { authService } from '../services';
+import { useAuth } from '../contexts';
 
 interface OnboardingProps {
   onComplete: () => void;
 }
 
-type Step = 'SPLASH' | 'AUTH' | 'NAME' | 'INCOME' | 'GOALS' | 'INTERESTS' | 'LOADING';
+type Step = 'SPLASH' | 'AUTH' | 'NAME' | 'INCOME' | 'GOALS' | 'INTERESTS' | 'AVATAR' | 'LOADING';
+
+const AVAILABLE_AVATARS = [
+  '/assets/profilePic.png',
+  '/assets/profilePic2.jpg',
+  '/assets/profilePic3.jpg',
+  '/assets/profilePic4.jpg',
+  '/assets/profilePic5.jpg',
+  '/assets/profilePic6.jpg',
+];
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
+  const { login, register, updateUser } = useAuth();
   const [step, setStep] = useState<Step>('SPLASH');
   const [authMode, setAuthMode] = useState<'LOGIN' | 'SIGNUP'>('SIGNUP');
   const [loading, setLoading] = useState(false);
@@ -22,7 +32,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     password: '',
     monthlyIncome: 1000,
     savingsGoal: 100,
-    interests: [] as string[]
+    interests: [] as string[],
+    avatarUrl: '' // Será selecionado na etapa AVATAR
   });
 
   const handleInterestToggle = (interest: string) => {
@@ -59,13 +70,17 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
     try {
       if (authMode === 'LOGIN') {
-        // Login
-        const result = await authService.login({
+        // Login usando o contexto
+        const result = await login({
           email: formData.email,
           password: formData.password
         });
 
         console.log('Login bem-sucedido:', result);
+
+        // Atualiza formData com a renda real do usuário logado
+        const userIncome = result.user.profile?.monthly_income || 0;
+        setFormData(prev => ({ ...prev, monthlyIncome: userIncome }));
 
         // Apenas vai para LOADING se o login foi bem-sucedido
         setStep('LOADING');
@@ -107,11 +122,28 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     setLoading(true);
 
     try {
-      await authService.register({
+      // 1. Registrar usuário
+      await register({
         email: formData.email,
         password: formData.password,
-        name: formData.name
+        name: formData.name,
+        monthly_income: formData.monthlyIncome,
+        savings_goal: formData.savingsGoal
       });
+
+      // 2. Atualizar avatar após registro (se selecionado)
+      if (formData.avatarUrl) {
+        try {
+          const { authService } = await import('../services/authService');
+          const updatedUser = await authService.updateAvatar(formData.avatarUrl);
+          // Atualizar contexto global para refletir o avatar em todas as telas
+          updateUser(updatedUser);
+        } catch (avatarErr) {
+          // Se falhar ao salvar avatar, não bloqueia o registro
+          console.error('Erro ao salvar avatar:', avatarErr);
+        }
+      }
+
       setStep('LOADING');
       setTimeout(onComplete, 2000);
     } catch (err: any) {
@@ -120,12 +152,17 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
       if (errorMessage.includes('already')) {
         setError('Este email já está cadastrado. Tente fazer login.');
+        setStep('AUTH');
+        setAuthMode('LOGIN');
       } else if (errorMessage.includes('maiúscula') || errorMessage.includes('uppercase')) {
         setError('A senha deve conter pelo menos uma letra maiúscula');
+        setStep('AUTH');
       } else if (errorMessage.includes('número') || errorMessage.includes('number')) {
         setError('A senha deve conter pelo menos um número');
+        setStep('AUTH');
       } else if (errorMessage.includes('6 caracteres') || errorMessage.includes('6 characters')) {
         setError('A senha deve ter no mínimo 6 caracteres');
+        setStep('AUTH');
       } else {
         setError(errorMessage);
       }
@@ -140,7 +177,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     else if (step === 'NAME') setStep('INCOME');
     else if (step === 'INCOME') setStep('GOALS');
     else if (step === 'GOALS') setStep('INTERESTS');
-    else if (step === 'INTERESTS') {
+    else if (step === 'INTERESTS') setStep('AVATAR');
+    else if (step === 'AVATAR') {
         handleCompleteSignup();
     }
   };
@@ -150,6 +188,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     else if (step === 'INCOME') setStep('NAME');
     else if (step === 'GOALS') setStep('INCOME');
     else if (step === 'INTERESTS') setStep('GOALS');
+    else if (step === 'AVATAR') setStep('INTERESTS');
   };
 
   // --- RENDER COMPONENTS ---
@@ -428,7 +467,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col p-6 animate-fade-in">
         <div className="w-full bg-slate-200 h-1 rounded-full mb-8">
-            <div className="bg-finap-primary h-1 rounded-full w-full transition-all"></div>
+            <div className="bg-finap-primary h-1 rounded-full w-3/4 transition-all"></div>
         </div>
         
         <div className="flex-1">
@@ -459,7 +498,72 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
         <button
             onClick={nextStep}
-            disabled={formData.interests.length === 0 || loading}
+            disabled={formData.interests.length === 0}
+            className="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+        >
+            Próximo Passo
+        </button>
+      </div>
+    );
+  }
+
+  if (step === 'AVATAR') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col p-6 animate-fade-in">
+        <div className="w-full bg-slate-200 h-1 rounded-full mb-8">
+            <div className="bg-finap-primary h-1 rounded-full w-full transition-all"></div>
+        </div>
+
+        <div className="flex-1">
+            <button onClick={prevStep} className="text-slate-400 mb-6"><ArrowLeft /></button>
+
+            {error && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-lg flex items-start">
+                  <AlertCircle className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+            )}
+
+            <div className="flex flex-col items-center text-center mb-8">
+                <FimMascot size="md" emotion="happy" className="mb-4" />
+                <h2 className="text-3xl font-black text-slate-800 mb-2">Escolha seu avatar!</h2>
+                <p className="text-slate-500">Essa será sua foto de perfil no FINAP.</p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mb-8">
+                {AVAILABLE_AVATARS.map((avatar, index) => {
+                    const isSelected = formData.avatarUrl === avatar;
+                    return (
+                        <button
+                            key={index}
+                            onClick={() => setFormData({...formData, avatarUrl: avatar})}
+                            className={`relative aspect-square rounded-2xl overflow-hidden border-4 transition-all transform ${
+                                isSelected
+                                ? 'border-finap-primary scale-105 shadow-lg shadow-teal-500/30'
+                                : 'border-transparent hover:border-slate-200'
+                            }`}
+                        >
+                            <img
+                                src={avatar}
+                                alt={`Avatar ${index + 1}`}
+                                className="w-full h-full object-cover"
+                            />
+                            {isSelected && (
+                                <div className="absolute inset-0 bg-finap-primary/20 flex items-center justify-center">
+                                    <div className="bg-finap-primary rounded-full p-1">
+                                        <CheckCircle2 size={24} className="text-white" />
+                                    </div>
+                                </div>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+
+        <button
+            onClick={nextStep}
+            disabled={!formData.avatarUrl || loading}
             className="w-full bg-finap-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-500/30 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2"
         >
             {loading ? (
@@ -485,7 +589,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 </div>
             </div>
             <h2 className="text-2xl font-black text-slate-800 mb-2">Montando seu perfil...</h2>
-            <p className="text-slate-500 mb-8">Criando missões personalizadas baseadas na sua renda de R$ {formData.monthlyIncome}.</p>
+            <p className="text-slate-500 mb-8">
+              {formData.monthlyIncome > 0
+                ? `Criando missões personalizadas baseadas na sua renda de R$ ${formData.monthlyIncome}.`
+                : 'Preparando suas missões personalizadas.'}
+            </p>
 
             <div className="flex gap-2 items-center text-finap-primary font-bold bg-teal-50 px-4 py-2 rounded-full">
                 <Loader2 size={18} className="animate-spin" />

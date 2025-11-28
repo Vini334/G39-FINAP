@@ -2,40 +2,41 @@
 # FINAP Backend - Python Dependencies
 # ========================================
 # Based on docs/MVP_ROADMAP.md and docs/ARCHITECTURE.md
+# Updated for Python 3.14 compatibility
 
 # Web Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
 
-# Data Validation
-pydantic==2.5.0
-pydantic-settings==2.1.0
-email-validator==2.1.0
+# Data Validation (updated for Python 3.14 wheel support)
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+email-validator>=2.2.0
 
 # Firebase
-firebase-admin==6.2.0
+firebase-admin>=6.5.0
 
 # External APIs
-google-generativeai  # Latest compatible version
+google-generativeai
 
 # Authentication & Security
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-dotenv==1.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-dotenv>=1.0.0
 
 # HTTP Client
-httpx==0.25.2
+httpx>=0.27.0
 
 # Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-pytest-cov==4.1.0
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
+pytest-cov>=6.0.0
 
 # Code Quality
-black==23.11.0
-ruff==0.1.6
-mypy==1.7.1
+black>=24.10.0
+ruff>=0.7.0
+mypy>=1.13.0
 
 # Optional: Monitoring
-sentry-sdk[fastapi]==1.38.0
+sentry-sdk[fastapi]>=2.18.0

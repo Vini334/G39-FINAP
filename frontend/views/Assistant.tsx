@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Message } from '../types';
 import { Send, RefreshCw, Sparkles } from 'lucide-react';
 import { FimMascot } from '../components/FimMascot';
-import { fimService } from '../services';
+import { fimService, missionService } from '../services';
 import { useToast } from '../components/Toast';
+import { useAuth } from '../contexts/AuthContext';
 
 const QUICK_PROMPTS = [
   { emoji: '🍔', text: "Como economizar em delivery?" },
@@ -21,6 +22,7 @@ export const Assistant: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { showToast, ToastComponent } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadChatHistory();
@@ -73,6 +75,11 @@ export const Assistant: React.FC = () => {
       };
 
       setMessages(prev => [...prev, fimMsg]);
+
+      // Trigger CHAT_FIM mission
+      if (user?.uid) {
+        missionService.triggerChatFim(user.uid).catch(console.error);
+      }
     } catch (error: any) {
       console.error('Erro ao enviar mensagem:', error);
       showToast(error.message || 'Erro ao enviar mensagem', 'error');

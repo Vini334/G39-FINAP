@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "modules",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "course_id", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

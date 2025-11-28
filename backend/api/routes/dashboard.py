@@ -7,10 +7,11 @@ from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timedelta
 from schemas.transaction import DashboardSummary, TransactionResponse
 from schemas.common import SuccessResponse, APIResponse
-from schemas.gamification import DashboardSummaryResponse, DashboardStats, BalanceInfo, BudgetAlertInfo, MissionResponse
+from schemas.gamification import DashboardSummaryResponse, DashboardStats, BalanceInfo, BudgetAlertInfo, MissionResponse, LearningProgressInfo
 from services.transaction_service import TransactionService
 from services.gamification_service import GamificationService
 from services.mission_service import MissionService
+from services.course_service import CourseService
 from core.database import get_firestore_client
 from models.gamification import MissionStatus
 
@@ -18,6 +19,7 @@ router = APIRouter()
 transaction_service = TransactionService()
 gamification_service = GamificationService()
 mission_service = MissionService()
+course_service = CourseService()
 
 # Temporary: Mock user ID for MVP (replace with auth later)
 MOCK_USER_ID = "test-user-123"
@@ -198,8 +200,11 @@ async def get_dashboard_overview(user_id: str):
         spent_this_month = summary['total_expenses']
         budget_percentage = int((spent_this_month / monthly_budget) * 100) if monthly_budget > 0 else 0
 
+        # Saldo restante = limite de gastos - gastos do mês
+        remaining_balance = monthly_budget - spent_this_month
+
         balance = BalanceInfo(
-            current=summary['balance'],
+            current=remaining_balance,
             spent_this_month=spent_this_month,
             monthly_budget=monthly_budget,
             budget_percentage=budget_percentage
@@ -240,8 +245,62 @@ async def get_dashboard_overview(user_id: str):
                 date=mission.date
             ))
 
-        # 5. Learning progress (optional - to be implemented later)
+        # 5. Learning progress - get user's current course/module progress
         learning_progress = None
+        try:
+            courses = course_service.get_all_courses(user_id)
+
+            # Find the first course with progress (in progress or not started)
+            for course in courses:
+                if course.get('locked'):
+                    continue
+
+                # Get modules for this course
+                modules = course_service.get_course_modules(course['id'], user_id)
+
+                for module in modules:
+                    # Get module with phases to get detailed progress
+                    module_with_phases = course_service.get_module_with_phases(module['id'], user_id)
+
+                    if module_with_phases:
+                        phases = module_with_phases.get('phases', [])
+                        total_phases = len(phases)
+                        phases_completed = module_with_phases.get('phases_completed', 0)
+                        progress_pct = module_with_phases.get('progress_percentage', 0)
+
+                        # Find current phase (first non-completed phase or first phase if none started)
+                        current_phase_id = None
+                        current_phase_num = phases_completed
+
+                        for i, phase in enumerate(phases):
+                            if phase.get('status') == 'current':
+                                current_phase_id = phase['id']
+                                current_phase_num = i
+                                break
+
+                        # If no current phase found, use first phase
+                        if not current_phase_id and phases:
+                            current_phase_id = phases[0]['id']
+                            current_phase_num = 0
+
+                        learning_progress = LearningProgressInfo(
+                            course_id=course['id'],
+                            course_title=course['title'],
+                            module_id=module_with_phases['id'],
+                            module_title=module_with_phases['title'],
+                            current_phase=current_phase_num,
+                            total_phases=total_phases,
+                            progress_percentage=progress_pct,
+                            current_phase_id=current_phase_id
+                        )
+                        break
+
+                if learning_progress:
+                    break
+
+        except Exception as e:
+            print(f"Error loading learning progress: {e}")
+            learning_progress = None
 
         # Build response
         dashboard_response = DashboardSummaryResponse(

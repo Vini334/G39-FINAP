@@ -10,12 +10,13 @@ from services.mission_service import MissionService
 from schemas.gamification import (
     AddXPRequest, SpendLivesRequest, AwardCoinsRequest,
     CreateChallengeRequest, UpdateChallengeProgressRequest,
+    UpdateMissionProgressRequest,
     GamificationStats, XPTransactionResponse, LivesResponse,
     CoinsResponse, ChallengeResponse, ChallengesListResponse,
-    LevelInfo, MissionResponse, CompleteMissionResponse
+    LevelInfo, MissionResponse, CompleteMissionResponse, MissionProgressResponse
 )
 from schemas.common import APIResponse
-from models.gamification import LEVELS, XP_REWARDS, XPAction, MissionStatus
+from models.gamification import LEVELS, XP_REWARDS, XPAction, MissionStatus, MissionType
 from core.database import get_firestore_client
 from datetime import datetime, timedelta
 
@@ -609,6 +610,123 @@ async def get_mission_stats(user_id: str):
             message="Mission stats retrieved successfully"
         )
 
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@router.post("/missions/progress", response_model=APIResponse)
+async def update_mission_progress(request: UpdateMissionProgressRequest):
+    """
+    Update mission progress by type.
+
+    This endpoint increments the progress of a mission based on its type.
+    If the mission reaches its target, it's automatically completed and rewards are given.
+
+    Mission types:
+    - daily_login: Fazer login diário
+    - add_transaction: Registrar transações (target: 3)
+    - complete_quiz: Completar um quiz
+    - view_report: Ver relatório financeiro
+    - chat_fim: Conversar com o FIM
+    """
+    try:
+        # Map string type to MissionType enum
+        type_mapping = {
+            'daily_login': MissionType.DAILY_LOGIN,
+            'add_transaction': MissionType.ADD_TRANSACTION,
+            'complete_quiz': MissionType.COMPLETE_QUIZ,
+            'view_report': MissionType.VIEW_REPORT,
+            'chat_fim': MissionType.CHAT_FIM,
+        }
+
+        mission_type = type_mapping.get(request.mission_type.lower())
+        if not mission_type:
+            raise ValueError(f"Invalid mission type: {request.mission_type}")
+
+        # Ensure daily missions exist for today
+        mission_service.expire_old_missions(request.user_id)
+        missions = mission_service.get_daily_missions(request.user_id)
+
+        # Update progress
+        updated_mission = mission_service.update_mission_progress(
+            request.user_id,
+            mission_type,
+            increment=1
+        )
+
+        if not updated_mission:
+            # Mission might already be completed or not found
+            return APIResponse(
+                success=True,
+                data={
+                    'mission_id': None,
+                    'mission_type': request.mission_type,
+                    'completed': False,
+                    'message': 'Mission already completed or not found for today'
+                },
+                message='Mission already completed or not found for today'
+            )
+
+        # Check if mission was just completed (progress >= target)
+        was_completed = updated_mission.status == MissionStatus.COMPLETED
+        xp_earned = 0
+        coins_earned = 0
+        total_xp = None
+        total_coins = None
+        level_up = False
+        new_level = None
+
+        if was_completed:
+            # Complete the mission to award rewards
+            try:
+                result = mission_service.complete_mission(updated_mission.id, request.user_id)
+                xp_earned = result['xp_earned']
+                coins_earned = result['coins_earned']
+                total_coins = result['total_coins']
+                level_up = result['level_up']
+                new_level = result['new_level']
+
+                # Get updated user stats
+                db = get_firestore_client()
+                user_doc = db.collection('users').document(request.user_id).get()
+                user_data = user_doc.to_dict()
+                gamification = user_data.get('gamification', {})
+                total_xp = gamification.get('xp', 0)
+            except ValueError:
+                # Mission already completed, just return current state
+                pass
+
+        response = MissionProgressResponse(
+            success=True,
+            mission_id=updated_mission.id,
+            mission_type=request.mission_type,
+            title=updated_mission.title,
+            progress=updated_mission.progress,
+            target=updated_mission.target,
+            completed=was_completed,
+            xp_earned=xp_earned,
+            coins_earned=coins_earned,
+            total_xp=total_xp,
+            total_coins=total_coins,
+            level_up=level_up,
+            new_level=new_level,
+            message=f"Missão completada! +{xp_earned} XP, +{coins_earned} moedas!" if was_completed else f"Progresso atualizado: {updated_mission.progress}/{updated_mission.target}"
+        )
+
+        return APIResponse(
+            success=True,
+            data=response.dict(),
+            message=response.message
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

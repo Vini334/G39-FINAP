@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '../components/Card';
 import { Transaction } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { ArrowDownRight, ArrowUpRight, Filter, Plus, Trash2, X, Check, DollarSign, Loader } from 'lucide-react';
-import { transactionService } from '../services';
+import { transactionService, missionService } from '../services';
 import { useToast } from '../components/Toast';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ExtractProps {}
 
@@ -22,6 +23,8 @@ export const Extract: React.FC<ExtractProps> = () => {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { showToast, ToastComponent } = useToast();
+  const { user } = useAuth();
+  const viewReportTriggered = useRef(false);
 
   // New Transaction Form State
   const [newTx, setNewTx] = useState({
@@ -34,6 +37,12 @@ export const Extract: React.FC<ExtractProps> = () => {
   useEffect(() => {
     loadTransactions();
 
+    // Trigger VIEW_REPORT mission on first mount
+    if (user?.uid && !viewReportTriggered.current) {
+      viewReportTriggered.current = true;
+      missionService.triggerViewReport(user.uid).catch(console.error);
+    }
+
     // Reload data when window/tab gets focus (user returns to the tab)
     const handleFocus = () => {
       loadTransactions();
@@ -44,7 +53,7 @@ export const Extract: React.FC<ExtractProps> = () => {
     return () => {
       window.removeEventListener('focus', handleFocus);
     };
-  }, []);
+  }, [user?.uid]);
 
   const loadTransactions = async () => {
     try {
@@ -100,6 +109,11 @@ export const Extract: React.FC<ExtractProps> = () => {
         date: new Date().toISOString(),
         type: newTx.type
       });
+
+      // Trigger ADD_TRANSACTION mission
+      if (user?.uid) {
+        missionService.triggerAddTransaction(user.uid).catch(console.error);
+      }
 
       // Reload all transactions from server to ensure consistency
       await loadTransactions();

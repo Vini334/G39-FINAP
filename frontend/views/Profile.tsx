@@ -2,10 +2,20 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../components/Card';
 import { UserStats, ViewState } from '../types';
-import { ArrowLeft, Settings, ShoppingBag, Palette, Bell, Shield, UserPlus, UserMinus, X, Star, Zap, Award, LogOut, HelpCircle, Loader } from 'lucide-react';
+import { ArrowLeft, Settings, ShoppingBag, Palette, Bell, Shield, UserPlus, UserMinus, X, Star, Zap, Award, LogOut, HelpCircle, Loader, User, CheckCircle2, Loader2 } from 'lucide-react';
 import { FimMascot } from '../components/FimMascot';
 import { authService } from '../services';
 import { useToast } from '../components/Toast';
+import { useAuth } from '../contexts/AuthContext';
+
+const AVAILABLE_AVATARS = [
+  '/assets/profilePic.png',
+  '/assets/profilePic2.jpg',
+  '/assets/profilePic3.jpg',
+  '/assets/profilePic4.jpg',
+  '/assets/profilePic5.jpg',
+  '/assets/profilePic6.jpg',
+];
 
 interface ProfileProps {
   stats: UserStats;
@@ -25,6 +35,10 @@ export const Profile: React.FC<ProfileProps> = ({ stats, onBack, onNavigate }) =
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const { showToast, ToastComponent } = useToast();
+  const { updateUser } = useAuth();
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('');
+  const [savingAvatar, setSavingAvatar] = useState(false);
   const [friends, setFriends] = useState<Friend[]>([
       { id: '1', name: 'Sarah', avatarSeed: 'Sarah', online: true },
       { id: '2', name: 'Mike', avatarSeed: 'Mike', online: false },
@@ -80,6 +94,36 @@ export const Profile: React.FC<ProfileProps> = ({ stats, onBack, onNavigate }) =
       setFriends(prev => [...prev, newFriend]);
   };
 
+  const openAvatarModal = () => {
+    setSelectedAvatar(userData?.profile?.avatar_url || '/assets/profilePic.png');
+    setIsAvatarModalOpen(true);
+  };
+
+  const handleSaveAvatar = async () => {
+    if (!selectedAvatar) return;
+
+    setSavingAvatar(true);
+    try {
+      console.log('[Profile] Salvando avatar:', selectedAvatar);
+      const updatedUser = await authService.updateAvatar(selectedAvatar);
+      console.log('[Profile] Resposta do backend:', updatedUser);
+      // Atualizar userData local
+      setUserData((prev: any) => ({
+        ...prev,
+        profile: { ...prev?.profile, avatar_url: selectedAvatar }
+      }));
+      // Atualizar contexto global para refletir em outras telas (ex: Overview)
+      updateUser(updatedUser);
+      showToast('Avatar atualizado com sucesso!', 'success');
+      setIsAvatarModalOpen(false);
+    } catch (error: any) {
+      console.error('[Profile] Erro ao atualizar avatar:', error);
+      showToast(error.message || 'Erro ao atualizar avatar', 'error');
+    } finally {
+      setSavingAvatar(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
@@ -118,7 +162,7 @@ export const Profile: React.FC<ProfileProps> = ({ stats, onBack, onNavigate }) =
              {/* Main Avatar */}
              <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-indigo-100 relative z-10">
                 <img
-                   src="/assets/profilePic.png"
+                   src={userData?.profile?.avatar_url || '/assets/profilePic.png'}
                    alt="Profile"
                    className="w-full h-full object-cover"
                 />
@@ -276,6 +320,26 @@ export const Profile: React.FC<ProfileProps> = ({ stats, onBack, onNavigate }) =
               </div>
 
               <div className="space-y-2 flex-1">
+                  {/* Alterar Avatar - Item especial com onClick */}
+                  <div
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      openAvatarModal();
+                    }}
+                    className="p-4 flex items-center justify-between rounded-xl hover:bg-slate-50 cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-purple-50 p-2 rounded-lg text-purple-500 group-hover:bg-white group-hover:text-purple-600 transition-colors">
+                        <User size={20} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-slate-800">Alterar Avatar</p>
+                        <p className="text-xs text-slate-400">Escolha uma nova foto</p>
+                      </div>
+                    </div>
+                    <ArrowLeft size={16} className="rotate-180 text-slate-300" />
+                  </div>
+
                   {[
                     { icon: Palette, label: 'Aparência do App', sub: 'Modo Claro' },
                     { icon: Bell, label: 'Notificações', sub: 'Ativo' },
@@ -309,6 +373,86 @@ export const Profile: React.FC<ProfileProps> = ({ stats, onBack, onNavigate }) =
               </div>
           </div>
       </div>
+
+      {/* Avatar Selection Modal */}
+      {isAvatarModalOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/50 z-50 animate-fade-in backdrop-blur-sm"
+            onClick={() => !savingAvatar && setIsAvatarModalOpen(false)}
+          />
+
+          {/* Modal */}
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-white rounded-3xl shadow-2xl p-6 max-w-md mx-auto animate-fade-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-black text-slate-800">Escolha seu avatar</h2>
+              <button
+                onClick={() => !savingAvatar && setIsAvatarModalOpen(false)}
+                className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
+                disabled={savingAvatar}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {AVAILABLE_AVATARS.map((avatar, index) => {
+                const isSelected = selectedAvatar === avatar;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedAvatar(avatar)}
+                    disabled={savingAvatar}
+                    className={`relative aspect-square rounded-2xl overflow-hidden border-4 transition-all transform ${
+                      isSelected
+                        ? 'border-finap-primary scale-105 shadow-lg shadow-teal-500/30'
+                        : 'border-transparent hover:border-slate-200'
+                    } ${savingAvatar ? 'opacity-50' : ''}`}
+                  >
+                    <img
+                      src={avatar}
+                      alt={`Avatar ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    {isSelected && (
+                      <div className="absolute inset-0 bg-finap-primary/20 flex items-center justify-center">
+                        <div className="bg-finap-primary rounded-full p-1">
+                          <CheckCircle2 size={20} className="text-white" />
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsAvatarModalOpen(false)}
+                disabled={savingAvatar}
+                className="flex-1 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveAvatar}
+                disabled={savingAvatar || !selectedAvatar}
+                className="flex-1 py-3 rounded-xl bg-finap-primary text-white font-bold hover:bg-teal-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {savingAvatar ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  'Salvar'
+                )}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Toast Notifications */}
       {ToastComponent}
