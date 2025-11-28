@@ -79,9 +79,11 @@ app = FastAPI(
 )
 
 # Configure CORS
+# allow_origin_regex allows all Vercel preview deployments (g39-finap-*.vercel.app)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://g39-finap.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
