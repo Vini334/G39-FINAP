@@ -6,8 +6,8 @@ interface AuthContextType {
   user: UserData | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<{ user: UserData }>;
+  register: (data: RegisterRequest) => Promise<{ user: UserData }>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<UserData>) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -45,11 +45,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (data: LoginRequest) => {
     const response = await authService.login(data);
     setUser(response.user);
+    return { user: response.user };
   };
 
   const register = async (data: RegisterRequest) => {
     const response = await authService.register(data);
     setUser(response.user);
+    return { user: response.user };
   };
 
   const logout = async () => {
