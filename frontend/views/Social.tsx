@@ -861,7 +861,7 @@ export const Social: React.FC = () => {
                   type="text"
                   value={newEventTitle}
                   onChange={(e) => setNewEventTitle(e.target.value)}
-                  placeholder="Ex: Viagem de Juquey, Churrasco, etc."
+                  placeholder="Ex: Viagem de Juquehy, Churrasco, etc."
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-finap-primary focus:ring-2 focus:ring-finap-primary/20 outline-none transition-all"
                 />
               </div>

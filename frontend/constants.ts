@@ -63,7 +63,7 @@ export const QUIZ_SAMPLE: QuizQuestion[] = [
 export const MOCK_SPLIT_EVENTS: SplitEvent[] = [
   {
     id: 'se1',
-    title: 'Viagem de Juquey 13/11',
+    title: 'Viagem de Juquehy 13/11',
     date: '13 Nov 2024',
     createdBy: 'u1',
     members: [
