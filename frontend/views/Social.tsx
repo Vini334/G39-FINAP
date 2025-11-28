@@ -425,7 +425,7 @@ export const Social: React.FC = () => {
         {/* Add Expense Modal */}
         {isAddExpenseOpen && (
           <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white w-full max-w-md rounded-3xl p-6 pb-20 shadow-2xl max-h-[calc(100vh-120px)] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-black text-slate-800">Nova Despesa</h2>
                 <button
@@ -826,7 +826,7 @@ export const Social: React.FC = () => {
       {/* Create Event Modal */}
       {isCreateEventOpen && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 pb-20 shadow-2xl max-h-[calc(100vh-120px)] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-black text-slate-800">Novo Evento</h2>
               <button

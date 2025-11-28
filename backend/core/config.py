@@ -22,8 +22,13 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:19006",
         "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:3003",
         "exp://"
     ]
+    # Additional origins from environment (comma-separated)
+    EXTRA_ALLOWED_ORIGINS: str = ""
 
     # Security
     SECRET_KEY: str = "your-secret-key-change-in-production"

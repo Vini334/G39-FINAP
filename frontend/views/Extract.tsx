@@ -238,7 +238,7 @@ export const Extract: React.FC<ExtractProps> = () => {
       {/* Add Transaction Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 pb-20 shadow-2xl max-h-[calc(100vh-120px)] overflow-y-auto">
              <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-black text-slate-800">Nova Transação</h3>
                 <button onClick={() => setIsAddModalOpen(false)} className="p-2 bg-slate-50 rounded-full text-slate-400 hover:text-slate-600">
