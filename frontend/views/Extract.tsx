@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Card } from '../components/Card';
 import { Transaction } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
@@ -235,83 +236,91 @@ export const Extract: React.FC<ExtractProps> = () => {
         </button>
       </div>
 
-      {/* Add Transaction Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-6 pb-20 shadow-2xl max-h-[calc(100vh-120px)] overflow-y-auto">
-             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black text-slate-800">Nova Transação</h3>
-                <button onClick={() => setIsAddModalOpen(false)} className="p-2 bg-slate-50 rounded-full text-slate-400 hover:text-slate-600">
-                  <X size={20} />
-                </button>
-             </div>
-             
-             <div className="space-y-4">
-                {/* Type Toggle */}
-                <div className="flex bg-slate-100 p-1 rounded-xl">
-                   <button 
-                     onClick={() => setNewTx({...newTx, type: 'expense'})}
-                     className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${newTx.type === 'expense' ? 'bg-white text-red-500 shadow-sm' : 'text-slate-500'}`}
-                   >
-                     Despesa
-                   </button>
-                   <button
-                     onClick={() => setNewTx({...newTx, type: 'income'})}
-                     className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${newTx.type === 'income' ? 'bg-white text-emerald-500 shadow-sm' : 'text-slate-500'}`}
-                   >
-                     Receita
-                   </button>
-                </div>
+      {/* Add Transaction Modal - usando Portal para renderizar fora do container */}
+      {isAddModalOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsAddModalOpen(false)}
+        >
+          <div
+            className="bg-white w-[calc(100%-2rem)] max-w-md rounded-3xl shadow-2xl p-6 animate-fade-in mx-4"
+            style={{ maxHeight: 'calc(100dvh - 6rem)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-slate-800">Nova Transação</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="p-2 rounded-full hover:bg-slate-100 text-slate-500">
+                <X size={20} />
+              </button>
+            </div>
 
-                <div>
-                   <label className="text-xs font-bold text-slate-500 uppercase ml-1">Descrição</label>
-                   <input
-                     type="text"
-                     value={newTx.desc}
-                     onChange={(e) => setNewTx({...newTx, desc: e.target.value})}
-                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 mt-1 font-medium outline-none focus:border-finap-primary"
-                     placeholder="ex: Burger King"
-                   />
-                </div>
-
-                <div>
-                   <label className="text-xs font-bold text-slate-500 uppercase ml-1">Valor (R$)</label>
-                   <div className="relative">
-                      <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="number"
-                        value={newTx.amount}
-                        onChange={(e) => setNewTx({...newTx, amount: e.target.value})}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pl-9 mt-1 font-medium outline-none focus:border-finap-primary"
-                        placeholder="0.00"
-                      />
-                   </div>
-                </div>
-
-                <div>
-                   <label className="text-xs font-bold text-slate-500 uppercase ml-1">Categoria</label>
-                   <select
-                     value={newTx.category}
-                     onChange={(e) => setNewTx({...newTx, category: e.target.value})}
-                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 mt-1 font-medium outline-none focus:border-finap-primary"
-                   >
-                     <option value="Alimentação">Alimentação</option>
-                     <option value="Transporte">Transporte</option>
-                     <option value="Lazer">Lazer</option>
-                     <option value="Educação">Educação</option>
-                     <option value="Outros">Outros</option>
-                   </select>
-                </div>
-
+            <div className="space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 14rem)' }}>
+              {/* Type Toggle */}
+              <div className="flex bg-slate-100 p-1 rounded-xl">
                 <button
-                  onClick={handleAddTransaction}
-                  className="w-full bg-finap-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/20 mt-2 active:scale-95 transition-transform"
+                  onClick={() => setNewTx({...newTx, type: 'expense'})}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${newTx.type === 'expense' ? 'bg-white text-red-500 shadow-sm' : 'text-slate-500'}`}
                 >
-                  Salvar Transação
+                  Despesa
                 </button>
-             </div>
+                <button
+                  onClick={() => setNewTx({...newTx, type: 'income'})}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${newTx.type === 'income' ? 'bg-white text-emerald-500 shadow-sm' : 'text-slate-500'}`}
+                >
+                  Receita
+                </button>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Descrição</label>
+                <input
+                  type="text"
+                  value={newTx.desc}
+                  onChange={(e) => setNewTx({...newTx, desc: e.target.value})}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 mt-1 font-medium outline-none focus:border-finap-primary"
+                  placeholder="ex: Burger King"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Valor (R$)</label>
+                <div className="relative">
+                  <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="number"
+                    value={newTx.amount}
+                    onChange={(e) => setNewTx({...newTx, amount: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pl-9 mt-1 font-medium outline-none focus:border-finap-primary"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase ml-1">Categoria</label>
+                <select
+                  value={newTx.category}
+                  onChange={(e) => setNewTx({...newTx, category: e.target.value})}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 mt-1 font-medium outline-none focus:border-finap-primary"
+                >
+                  <option value="Alimentação">Alimentação</option>
+                  <option value="Transporte">Transporte</option>
+                  <option value="Lazer">Lazer</option>
+                  <option value="Educação">Educação</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+
+              <button
+                onClick={handleAddTransaction}
+                className="w-full bg-finap-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/20 mt-2 active:scale-95 transition-transform"
+              >
+                Salvar Transação
+              </button>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Transactions List */}

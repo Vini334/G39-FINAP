@@ -101,7 +101,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
       if (errorMessage.includes('Email ou senha')) {
         setError(errorMessage);
-      } else if (errorMessage.includes('already') || errorMessage.includes('cadastrado')) {
+      } else if (errorMessage.includes('não cadastrado') || errorMessage.includes('cadastre-se')) {
+        setError('Email não cadastrado. Por favor, cadastre-se primeiro.');
+      } else if (errorMessage.includes('already') || errorMessage.includes('já está cadastrado')) {
         setError('Este email já está cadastrado. Tente fazer login.');
       } else if (errorMessage.includes('email')) {
         setError('Por favor, insira um email válido.');

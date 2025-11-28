@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Card } from '../components/Card';
 import {
   Users, Target, Share2, Trophy, Plus, LogIn, ArrowLeft, Calendar, MapPin,
@@ -422,10 +423,17 @@ export const Social: React.FC = () => {
           )}
         </div>
 
-        {/* Add Expense Modal */}
-        {isAddExpenseOpen && (
-          <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white w-full max-w-md rounded-3xl p-6 pb-20 shadow-2xl max-h-[calc(100vh-120px)] overflow-y-auto">
+        {/* Add Expense Modal - usando Portal */}
+        {isAddExpenseOpen && createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in"
+            onClick={() => { setIsAddExpenseOpen(false); resetExpenseForm(); }}
+          >
+            <div
+              className="bg-white w-[calc(100%-2rem)] max-w-md rounded-3xl shadow-2xl p-6 animate-fade-in mx-4"
+              style={{ maxHeight: 'calc(100dvh - 6rem)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-black text-slate-800">Nova Despesa</h2>
                 <button
@@ -436,7 +444,7 @@ export const Social: React.FC = () => {
                 </button>
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-5 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 14rem)' }}>
                 {/* Description */}
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase ml-1 mb-1.5 block">Descrição</label>
@@ -555,7 +563,8 @@ export const Social: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );
@@ -823,10 +832,17 @@ export const Social: React.FC = () => {
         )}
       </Card>
 
-      {/* Create Event Modal */}
-      {isCreateEventOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-md rounded-3xl p-6 pb-20 shadow-2xl max-h-[calc(100vh-120px)] overflow-y-auto">
+      {/* Create Event Modal - usando Portal */}
+      {isCreateEventOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in"
+          onClick={() => { setIsCreateEventOpen(false); setNewEventTitle(''); setNewEventDate(''); setSelectedFriends([]); }}
+        >
+          <div
+            className="bg-white w-[calc(100%-2rem)] max-w-md rounded-3xl shadow-2xl p-6 animate-fade-in mx-4"
+            style={{ maxHeight: 'calc(100dvh - 6rem)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-black text-slate-800">Novo Evento</h2>
               <button
@@ -837,7 +853,7 @@ export const Social: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-5 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 14rem)' }}>
               {/* Event Name */}
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase ml-1 mb-1.5 block">Nome do Evento</label>
@@ -909,7 +925,8 @@ export const Social: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

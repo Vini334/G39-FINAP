@@ -80,9 +80,6 @@ export const Overview: React.FC<OverviewProps> = ({ onNavigate }) => {
       // Get user's first name
       const firstName = user.name?.split(' ')[0] || 'Usuário';
       setUserName(firstName);
-
-      // Refresh gamification stats to ensure they're up to date
-      await refreshStats();
     } catch (error: any) {
       console.error('Erro ao carregar overview:', error);
       showToast(error.message || 'Erro ao carregar dados', 'error');

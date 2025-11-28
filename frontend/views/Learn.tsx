@@ -696,7 +696,10 @@ export const Learn: React.FC<LearnProps> = ({ stats }) => {
               <div className="bg-white border-t border-slate-200 p-4 flex gap-3">
                   {currentContentPage > 0 && (
                       <button
-                          onClick={() => setCurrentContentPage(prev => prev - 1)}
+                          onClick={() => {
+                              setCurrentContentPage(prev => prev - 1);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
                           className="flex-1 bg-slate-100 text-slate-700 font-bold py-4 rounded-xl hover:bg-slate-200 transition-colors"
                       >
                           Anterior
@@ -712,6 +715,7 @@ export const Learn: React.FC<LearnProps> = ({ stats }) => {
                               startQuiz();
                           } else {
                               setCurrentContentPage(prev => prev + 1);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
                           }
                       }}
                       className="flex-1 bg-finap-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/30 active:scale-95 transition-transform flex items-center justify-center gap-2"

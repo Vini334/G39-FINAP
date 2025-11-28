@@ -23,18 +23,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const initAuth = async () => {
       try {
         if (authService.isAuthenticated()) {
-          const userData = authService.getUser();
-          if (userData) {
-            setUser(userData);
+          // Cache-first: mostra dados do localStorage imediatamente
+          const cachedUser = authService.getUser();
+          if (cachedUser) {
+            setUser(cachedUser);
+            setIsLoading(false); // Libera UI imediatamente com dados em cache
+
+            // Atualiza em background (silencioso)
+            authService.getCurrentUser()
+              .then(freshUser => setUser(freshUser))
+              .catch(() => {}); // Ignora erros na atualização em background
           } else {
+            // Sem cache, precisa esperar a API
             const freshUser = await authService.getCurrentUser();
             setUser(freshUser);
+            setIsLoading(false);
           }
+        } else {
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Auth init error:', error);
         await authService.logout();
-      } finally {
         setIsLoading(false);
       }
     };
