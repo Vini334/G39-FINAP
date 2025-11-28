@@ -35,7 +35,14 @@ ALLOWED_ORIGINS = [
     "http://localhost:3002",   # Web dev (Vite alternative port 2)
     "http://localhost:3003",   # Web dev (Vite alternative port 3)
     "exp://",                  # Expo Go
+    "https://g39-finap.vercel.app",  # Vercel production
 ]
+
+# Add extra origins from environment (comma-separated)
+# Example: EXTRA_ALLOWED_ORIGINS=https://finap.vercel.app,https://finap.netlify.app
+extra_origins = os.getenv("EXTRA_ALLOWED_ORIGINS", "")
+if extra_origins:
+    ALLOWED_ORIGINS.extend([origin.strip() for origin in extra_origins.split(",") if origin.strip()])
 
 
 @asynccontextmanager
